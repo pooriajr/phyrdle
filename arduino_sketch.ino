@@ -2,8 +2,9 @@
 #include "letter_identify.h"
 #include "slot.h"
 #include "logging.h"
+#include "lighting.h"  // Include the lighting header
 
-#define CHECK_INTERVAL 1000 // 1000 milliseconds
+#define CHECK_INTERVAL 100 // milliseconds
 #define SLOT_COUNT 5
 
 class Word {
@@ -71,6 +72,9 @@ void setup() {
   targetWord = dictionary.randomWord();
   Serial.print("Target word: ");
   Serial.println(targetWord);
+  
+  // Initialize the LED lighting
+  setupLighting();
 }
 
 void loop() {
@@ -78,6 +82,9 @@ void loop() {
   for (int i = 0; i < 3; i++) {
     slots[i].readLetter();
   }
+  
+  // Update LEDs based on slot states
+  updateSlotLEDs(slots, 3);
   
   // Use the logging function to print slot states and identified letters
   printSlotStates(slots, 3);
