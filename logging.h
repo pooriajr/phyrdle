@@ -10,7 +10,9 @@ void printSlotStates(Slot slots[], int slotCount) {
   for (int i = 0; i < slotCount; i++) {
     Serial.print("Slot ");
     Serial.print(i + 1);
-    Serial.print(": ");
+    Serial.print(" (Signal: ");
+    Serial.print(slots[i].signalValue);
+    Serial.print("): ");
     
     // Print the state as text
     switch(slots[i].state) {

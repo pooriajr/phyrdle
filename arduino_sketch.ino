@@ -74,6 +74,10 @@ void setup() {
 }
 
 void loop() {
+  // Read the state of each slot
+  for (int i = 0; i < 3; i++) {
+    slots[i].readLetter();
+  }
   
   // Use the logging function to print slot states
   printSlotStates(slots, 3);

@@ -20,23 +20,24 @@ class Slot {
     int pin;
     slotState state;
     String letter;
+    int signalValue; // Store the current analog signal value
     
     // Constructor with default values
-    Slot() : pin(0), state(EMPTY), letter("") {}
+    Slot() : pin(0), state(EMPTY), letter(""), signalValue(0) {}
     
     // Constructor with pin
-    Slot(int p) : pin(p), state(EMPTY), letter("") {}
+    Slot(int p) : pin(p), state(EMPTY), letter(""), signalValue(0) {}
     
     // Method to read analog signal and identify letter
     void readLetter() {
       // Read the analog value from the pin
-      int analogValue = analogRead(pin);
+      signalValue = analogRead(pin);
       
       // TODO: Implement letter identification based on analog signal
       // This would use the letter_identify.h functionality
       
       // For now, just a placeholder
-      if (analogValue > 0) {
+      if (signalValue > 0) {
         // Some threshold to determine if a tile is present
         state = FULL;
       } else {
