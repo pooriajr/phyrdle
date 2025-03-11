@@ -2,6 +2,7 @@
 #define SLOT_H
 
 #include <Arduino.h>
+#include "letter_identify.h"  // Include the letter identification header
 
 // Slot states
 enum slotState {
@@ -33,14 +34,12 @@ class Slot {
       // Read the analog value from the pin
       signalValue = analogRead(pin);
       
-      // TODO: Implement letter identification based on analog signal
-      // This would use the letter_identify.h functionality
-      
-      // For now, just a placeholder
-      if (signalValue > 0) {
-        // Some threshold to determine if a tile is present
+      // Use the letter_identify functionality to map the signal to a letter
+      if (signalValue > 100) {  // Threshold to determine if a tile is present
+        letter = identify(signalValue);  // Using the identify function from letter_identify.h
         state = FULL;
       } else {
+        letter = "";
         state = EMPTY;
       }
     }

@@ -12,6 +12,13 @@ void printSlotStates(Slot slots[], int slotCount) {
     Serial.print(i + 1);
     Serial.print(" (Signal: ");
     Serial.print(slots[i].signalValue);
+    
+    // Print the identified letter if one exists
+    if (slots[i].letter != "") {
+      Serial.print(", Letter: ");
+      Serial.print(slots[i].letter);
+    }
+    
     Serial.print("): ");
     
     // Print the state as text

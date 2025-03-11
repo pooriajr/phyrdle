@@ -74,12 +74,12 @@ void setup() {
 }
 
 void loop() {
-  // Read the state of each slot
+  // Read the state of each slot and identify letters
   for (int i = 0; i < 3; i++) {
     slots[i].readLetter();
   }
   
-  // Use the logging function to print slot states
+  // Use the logging function to print slot states and identified letters
   printSlotStates(slots, 3);
   
   // Add a delay to avoid flooding the serial monitor
