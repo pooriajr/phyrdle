@@ -33,26 +33,17 @@ void setupLighting() {
 void updateLEDForSlot(int ledIndex, Slot &slot);
 
 // Update LEDs based on slot states
-// Maps slot 1 to LED 1 (index 0), slot 2 to LED 3 (index 2), and slot 3 to LED 5 (index 4)
+// Maps each slot directly to the corresponding LED (slot 1 to LED 1, slot 2 to LED 2, etc.)
 void updateSlotLEDs(Slot slots[], int slotCount) {
   // Clear all LEDs first
   FastLED.clear();
   
-  // Map slots to specific LEDs (1->1, 2->3, 3->5)
+  // Update LEDs for each slot
   // Only update if we have enough slots and LEDs
-  if (slotCount >= 1 && NUM_LEDS >= 1) {
-    // Slot 1 -> LED 1 (index 0)
-    updateLEDForSlot(0, slots[0]);
-  }
+  int maxSlots = min(slotCount, NUM_LEDS);
   
-  if (slotCount >= 2 && NUM_LEDS >= 3) {
-    // Slot 2 -> LED 3 (index 2)
-    updateLEDForSlot(2, slots[1]);
-  }
-  
-  if (slotCount >= 3 && NUM_LEDS >= 5) {
-    // Slot 3 -> LED 5 (index 4)
-    updateLEDForSlot(4, slots[2]);
+  for (int i = 0; i < maxSlots; i++) {
+    updateLEDForSlot(i, slots[i]);
   }
   
   // Update the LED strip

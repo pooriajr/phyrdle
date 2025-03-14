@@ -55,7 +55,9 @@ String targetWord;
 Slot slot1(A0);  // Using analog pin A0
 Slot slot2(A1);  // Using analog pin A1
 Slot slot3(A2);  // Using analog pin A2
-Slot slots[3] = {slot1, slot2, slot3};
+Slot slot4(A3);  // Using analog pin A3
+Slot slot5(A4);  // Using analog pin A4
+Slot slots[SLOT_COUNT] = {slot1, slot2, slot3, slot4, slot5};
 
 void setup() {
   // Initialize serial communication
@@ -79,15 +81,15 @@ void setup() {
 
 void loop() {
   // Read the state of each slot and identify letters
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < SLOT_COUNT; i++) {
     slots[i].readLetter();
   }
   
   // Update LEDs based on slot states
-  updateSlotLEDs(slots, 3);
+  updateSlotLEDs(slots, SLOT_COUNT);
   
   // Use the logging function to print slot states and identified letters
-  printSlotStates(slots, 3);
+  printSlotStates(slots, SLOT_COUNT);
   
   // Add a delay to avoid flooding the serial monitor
   delay(CHECK_INTERVAL);
