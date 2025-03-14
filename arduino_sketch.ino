@@ -3,49 +3,171 @@
 #include "slot.h"
 #include "logging.h"
 #include "lighting.h"  // Include the lighting header
+#include "dictionary.h" // Include our new dictionary header
 
 #define CHECK_INTERVAL 100 // milliseconds
 #define SLOT_COUNT 5
 
-class Word {
-  // this is a class that takes in an array of slots and concatenates the letters into a word.
-  // if any of the slots is missing, the word is incomplete
-  // if the word doesn't exist in the dictionary, it is invalid
-  // if the word does exist in the dictionary, it is valid
-};
+// Forward declaration of global variables
+extern Dictionary dictionary;
+extern Slot slots[];
 
-class Dictionary {
-  // this is a singleton class knows all the valid words
-  // it can be asked for a random word
-  // it can be fed a word to see if that word is valid
+class Word {
+  private:
+    Slot* slots;
+    int slotCount;
+    String word;
+    
   public:
-    String randomWord() {
-      return "HELLO"; // Placeholder
+    enum WordStatus {
+      INCOMPLETE, // One or more slots are empty
+      INVALID,    // All slots have letters but the word is not in the dictionary
+      VALID       // All slots have letters and the word is in the dictionary
+    };
+    
+    WordStatus status;
+    
+    // Constructor
+    Word(Slot* s, int count) {
+      slots = s;
+      slotCount = count;
+      updateWord();
     }
     
-    bool isValid(String word) {
-      return true; // Placeholder
+    // Update the word based on current slot letters
+    void updateWord() {
+      word = "";
+      bool hasEmptySlot = false;
+      
+      // Concatenate letters from all slots
+      for (int i = 0; i < slotCount; i++) {
+        if (slots[i].letter == "") {
+          hasEmptySlot = true;
+        } else {
+          word += slots[i].letter;
+        }
+      }
+      
+      // Determine word status
+      if (hasEmptySlot) {
+        status = INCOMPLETE;
+      } else if (word.length() == slotCount && dictionary.isValid(word)) {
+        status = VALID;
+      } else {
+        status = INVALID;
+      }
+    }
+    
+    // Get the current word
+    String getWord() {
+      return word;
     }
 };
 
 class Result {
-  // takes in a word, evaluates for completion, validity, and correctness
-  // updates slots accordingly
-
-  // switch(word.status) {
-  //   case incomplete:
-  //     // all slots without letters "EMPTY" and the ones with letters "FULL"
-  //     break;
-  //   case invalid:
-  //     // all slots INVALID
-  //     break;
-  //   case valid:
-  //     // evaluate each slot for correctness
-  // }
+  private:
+    Word* wordPtr;
+    String targetWord;
+    Slot* slots;
+    
+  public:
+    // Constructor
+    Result(Word* w, String target, Slot* s) {
+      wordPtr = w;
+      targetWord = target;
+      slots = s;
+      evaluateWord();
+    }
+    
+    // Evaluate the word and update slot states
+    void evaluateWord() {
+      // Handle based on word status
+      switch(wordPtr->status) {
+        case Word::INCOMPLETE:
+          // For incomplete words, keep slots as EMPTY or FULL
+          // This is already handled by the Slot::readLetter() method
+          break;
+          
+        case Word::INVALID:
+          // For invalid words, mark all slots as INVALID
+          for (int i = 0; i < SLOT_COUNT; i++) {
+            slots[i].state = INVALID;
+          }
+          break;
+          
+        case Word::VALID:
+          // For valid words, evaluate each letter against the target word
+          evaluateLetters();
+          break;
+      }
+    }
+    
+    // Evaluate each letter against the target word
+    void evaluateLetters() {
+      String currentWord = wordPtr->getWord();
+      
+      // First pass: mark correct letters
+      for (int i = 0; i < SLOT_COUNT; i++) {
+        if (i < currentWord.length() && i < targetWord.length()) {
+          if (currentWord[i] == targetWord[i]) {
+            slots[i].state = CORRECT;
+          }
+        }
+      }
+      
+      // Second pass: mark misplaced and absent letters
+      for (int i = 0; i < SLOT_COUNT; i++) {
+        // Skip already marked correct letters
+        if (slots[i].state == CORRECT) continue;
+        
+        if (i < currentWord.length()) {
+          // Check if the letter exists elsewhere in the target word
+          bool found = false;
+          for (int j = 0; j < targetWord.length(); j++) {
+            if (currentWord[i] == targetWord[j] && j != i) {
+              found = true;
+              break;
+            }
+          }
+          
+          if (found) {
+            slots[i].state = MISPLACED;
+          } else {
+            slots[i].state = ABSENT;
+          }
+        }
+      }
+      
+      // Check if all letters are correct (win condition)
+      bool allCorrect = true;
+      for (int i = 0; i < SLOT_COUNT; i++) {
+        if (slots[i].state != CORRECT) {
+          allCorrect = false;
+          break;
+        }
+      }
+      
+      if (allCorrect) {
+        // Set all slots to WIN state
+        for (int i = 0; i < SLOT_COUNT; i++) {
+          slots[i].state = WIN;
+        }
+      }
+    }
 };
 
 class Board {
-  // handles lighting the slots
+  public:
+    // Constructor
+    Board() {
+      // Nothing to initialize here
+    }
+    
+    // Light up the slots based on their current state
+    void light(Slot slots[], int slotCount) {
+      // Use the updateSlotLEDs function from lighting.h
+      updateSlotLEDs(slots, slotCount);
+    }
 };
 
 // Global variables
@@ -85,8 +207,22 @@ void loop() {
     slots[i].readLetter();
   }
   
-  // Update LEDs based on slot states
-  updateSlotLEDs(slots, SLOT_COUNT);
+  // Check if all slots have letters (potential word to check)
+  bool allSlotsHaveLetters = true;
+  for (int i = 0; i < SLOT_COUNT; i++) {
+    if (slots[i].state != FULL) {
+      allSlotsHaveLetters = false;
+      break;
+    }
+  }
+  
+  // If all slots have letters, check the word
+  if (allSlotsHaveLetters) {
+    check_word();
+  } else {
+    // Otherwise, just update LEDs based on current slot states
+    board.light(slots, SLOT_COUNT);
+  }
   
   // Use the logging function to print slot states and identified letters
   printSlotStates(slots, SLOT_COUNT);
@@ -95,8 +231,30 @@ void loop() {
   delay(CHECK_INTERVAL);
 }
 
-// void check_word(){
-//   word = Word()
-//   result = Result(word)
-//   board.light()
-// }
+void check_word() {
+  // Create a Word object from the slots
+  Word currentWord(slots, SLOT_COUNT);
+  
+  // Create a Result object to evaluate the word against the target
+  Result result(&currentWord, targetWord, slots);
+  
+  // Light up the board based on the evaluation
+  board.light(slots, SLOT_COUNT);
+  
+  // Print the result to the serial monitor
+  Serial.print("Word: ");
+  Serial.print(currentWord.getWord());
+  Serial.print(" - Status: ");
+  
+  switch(currentWord.status) {
+    case Word::INCOMPLETE:
+      Serial.println("INCOMPLETE");
+      break;
+    case Word::INVALID:
+      Serial.println("INVALID");
+      break;
+    case Word::VALID:
+      Serial.println("VALID");
+      break;
+  }
+}
