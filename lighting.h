@@ -69,7 +69,7 @@ void updateLEDForSlot(int ledIndex, Slot &slot) {
       leds[ledIndex] = CRGB::Green;
       break;
     case ABSENT:
-      leds[ledIndex] = CRGB::Red;
+      leds[ledIndex] = CRGB::Black;
       break;
     case WIN:
       // We'll handle WIN state in the updateRainbowAnimation function
