@@ -188,6 +188,26 @@ Slot slot4(A3);  // Using analog pin A3
 Slot slot5(A4);  // Using analog pin A4
 Slot slots[SLOT_COUNT] = {slot1, slot2, slot3, slot4, slot5};
 
+// Function to test randomization by printing multiple random words
+void testRandomization() {
+  Serial.println("Testing randomization - printing 10 random words:");
+  
+  for (int i = 0; i < 10; i++) {
+    // Get a random word
+    String word = dictionary.randomWord();
+    
+    // Print the word
+    Serial.print(i + 1);
+    Serial.print(": ");
+    Serial.println(word);
+    
+    // Small delay
+    delay(50);
+  }
+  
+  Serial.println("Randomization test complete");
+}
+
 void setup() {
   // Initialize serial communication
   Serial.begin(9600);
@@ -201,6 +221,9 @@ void setup() {
   // Print a test message
   Serial.println("Phyrdle starting up...");
   Serial.println("Serial monitor test - if you can see this, serial communication is working!");
+  
+  // Test randomization
+  testRandomization();
   
   // Initialize the game with a random word
   resetGame();
@@ -325,6 +348,17 @@ void resetGame() {
   
   // Reset LED brightness back to normal
   FastLED.setBrightness(50);
+  
+  // Improve randomization by using multiple analog reads
+  // This creates a more unpredictable seed value
+  long randomSeed1 = analogRead(A5); // Use an unconnected analog pin
+  delay(5);  // Small delay to get different readings
+  long randomSeed2 = analogRead(A5);
+  delay(5);
+  long randomSeed3 = analogRead(A5);
+  
+  // Combine the readings to create a more random seed
+  randomSeed((randomSeed1 * randomSeed2) ^ randomSeed3 ^ millis());
   
   // Pick a new target word
   targetWord = dictionary.randomWord();
