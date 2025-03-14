@@ -7,10 +7,17 @@
 
 #define CHECK_INTERVAL 100 // milliseconds
 #define SLOT_COUNT 5
+#define WIN_TIMEOUT 5000 // 3 seconds in milliseconds
+#define LOG_INTERVAL 1000 // 1 second in milliseconds
 
 // Forward declaration of global variables
 extern Dictionary dictionary;
 extern Slot slots[];
+
+// Variables to track win state
+bool gameWon = false;
+unsigned long winTimestamp = 0;
+unsigned long lastLogTimestamp = 0; // For controlling log frequency
 
 class Word {
   private:
@@ -188,20 +195,38 @@ void setup() {
   // Wait a moment for the serial connection to establish
   delay(1000);
   
+  // Initialize timestamp for logging
+  lastLogTimestamp = millis();
+  
   // Print a test message
   Serial.println("Phyrdle starting up...");
   Serial.println("Serial monitor test - if you can see this, serial communication is working!");
   
-  // Print the target word
-  targetWord = dictionary.randomWord();
-  Serial.print("Target word: ");
-  Serial.println(targetWord);
+  // Initialize the game with a random word
+  resetGame();
   
   // Initialize the LED lighting
   setupLighting();
 }
 
 void loop() {
+  // Current time
+  unsigned long currentTime = millis();
+  
+  // Check if we're in a win state and if the timeout has elapsed
+  if (gameWon && (currentTime - winTimestamp >= WIN_TIMEOUT)) {
+    // Reset the game after win timeout
+    resetGame();
+    Serial.println("Game reset with new word after win!");
+  }
+  
+  // If game is won, just update LEDs and skip the rest of the loop
+  if (gameWon) {
+    board.light(slots, SLOT_COUNT);
+    delay(CHECK_INTERVAL);
+    return;
+  }
+  
   // Read the state of each slot and identify letters
   for (int i = 0; i < SLOT_COUNT; i++) {
     slots[i].readLetter();
@@ -224,8 +249,18 @@ void loop() {
     board.light(slots, SLOT_COUNT);
   }
   
-  // Use the logging function to print slot states and identified letters
-  printSlotStates(slots, SLOT_COUNT);
+  // Log only once per second
+  if (currentTime - lastLogTimestamp >= LOG_INTERVAL) {
+    // Print target word
+    Serial.print("Target word: ");
+    Serial.println(targetWord);
+    
+    // Use the logging function to print slot states and identified letters
+    printSlotStates(slots, SLOT_COUNT);
+    
+    // Update the last log timestamp
+    lastLogTimestamp = currentTime;
+  }
   
   // Add a delay to avoid flooding the serial monitor
   delay(CHECK_INTERVAL);
@@ -241,20 +276,62 @@ void check_word() {
   // Light up the board based on the evaluation
   board.light(slots, SLOT_COUNT);
   
-  // Print the result to the serial monitor
-  Serial.print("Word: ");
-  Serial.print(currentWord.getWord());
-  Serial.print(" - Status: ");
+  // Only log for valid words or invalid words (not incomplete)
+  if (currentWord.status != Word::INCOMPLETE) {
+    Serial.print("Word: ");
+    Serial.print(currentWord.getWord());
+    Serial.print(" - Status: ");
+    
+    switch(currentWord.status) {
+      case Word::INCOMPLETE:
+        Serial.println("INCOMPLETE");
+        break;
+      case Word::INVALID:
+        Serial.println("INVALID");
+        break;
+      case Word::VALID:
+        Serial.println("VALID");
+        break;
+    }
+  }
   
-  switch(currentWord.status) {
-    case Word::INCOMPLETE:
-      Serial.println("INCOMPLETE");
+  // Check if the game has been won
+  bool allWin = true;
+  for (int i = 0; i < SLOT_COUNT; i++) {
+    if (slots[i].state != WIN) {
+      allWin = false;
       break;
-    case Word::INVALID:
-      Serial.println("INVALID");
-      break;
-    case Word::VALID:
-      Serial.println("VALID");
-      break;
+    }
+  }
+  
+  // If all slots are in WIN state, set the game to won and record the timestamp
+  if (allWin) {
+    gameWon = true;
+    winTimestamp = millis();
+    
+    // Always log win messages
+    Serial.println("Game won! Resetting in 3 seconds...");
+  }
+}
+
+// Function to reset the game with a new word
+void resetGame() {
+  // Reset game state
+  gameWon = false;
+  
+  // Reset logging timestamp
+  lastLogTimestamp = millis();
+  
+  // Pick a new target word
+  targetWord = dictionary.randomWord();
+  
+  // Always log the new target word
+  Serial.print("New target word: ");
+  Serial.println(targetWord);
+  
+  // Reset all slots to EMPTY state
+  for (int i = 0; i < SLOT_COUNT; i++) {
+    slots[i].state = EMPTY;
+    slots[i].letter = "";
   }
 }

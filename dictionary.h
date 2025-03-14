@@ -6,7 +6,7 @@
 // List of 5-letter words that use the letters E, T, S, A, R
 // These words are common and use some combination of these letters
 const char* WORD_LIST[] = {
-  "STARE", "TEARS", "RATES"
+  "STARE", "TEARS", "RATES", "TASER"
 };
 
 const int WORD_COUNT = sizeof(WORD_LIST) / sizeof(WORD_LIST[0]);
