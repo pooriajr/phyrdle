@@ -220,9 +220,10 @@ void loop() {
     Serial.println("Game reset with new word after win!");
   }
   
-  // If game is won, just update LEDs and skip the rest of the loop
+  // If game is won, update with rainbow animation and skip the rest of the loop
   if (gameWon) {
-    board.light(slots, SLOT_COUNT);
+    // Use the rainbow animation instead of the regular LED update
+    updateRainbowAnimation();
     delay(CHECK_INTERVAL);
     return;
   }
@@ -321,6 +322,9 @@ void resetGame() {
   
   // Reset logging timestamp
   lastLogTimestamp = millis();
+  
+  // Reset LED brightness back to normal
+  FastLED.setBrightness(50);
   
   // Pick a new target word
   targetWord = dictionary.randomWord();

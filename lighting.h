@@ -18,6 +18,9 @@ CRGB leds[NUM_LEDS];
 #define DIM_WHITE  CRGB(10, 10, 10)   // Dim white for empty slots
 #define BRIGHT_WHITE CRGB(255, 255, 255) // Bright white for full slots
 
+// Variables for rainbow animation
+uint8_t gHue = 0; // rotating "base color" used by rainbow effect
+
 // Initialize the LED strip
 void setupLighting() {
   // Initialize FastLED
@@ -60,16 +63,17 @@ void updateLEDForSlot(int ledIndex, Slot &slot) {
       leds[ledIndex] = BRIGHT_WHITE;
       break;
     case MISPLACED:
-      leds[ledIndex] = CRGB::Orange;
+      leds[ledIndex] = CRGB::DarkOrange;
       break;
     case CORRECT:
       leds[ledIndex] = CRGB::Green;
       break;
     case ABSENT:
-      leds[ledIndex] = CRGB::Red;
+      leds[ledIndex] = CRGB::Black;
       break;
     case WIN:
-      // Rainbow effect could be implemented here
+      // We'll handle WIN state in the updateRainbowAnimation function
+      // This is just a fallback in case the animation isn't called
       leds[ledIndex] = CRGB::Purple;
       break;
     case INVALID:
@@ -79,6 +83,21 @@ void updateLEDForSlot(int ledIndex, Slot &slot) {
       leds[ledIndex] = CRGB::Black;
       break;
   }
+}
+
+// Function to update the rainbow animation for win state
+void updateRainbowAnimation() {
+  // Set higher brightness for the rainbow animation
+  FastLED.setBrightness(200);  // Increase brightness to 200 (0-255)
+  
+  // Use FastLED's built-in rainbow generator
+  fill_rainbow(leds, NUM_LEDS, gHue, 15);  // Increased delta value for more spread
+  
+  // Rapidly rotate the "base color" through the rainbow
+  gHue += 10;  // Increment hue much faster (10x the original speed)
+  
+  // Show the updated LEDs
+  FastLED.show();
 }
 
 // Light up specific LEDs (first, third, and fifth) - keeping this for testing
