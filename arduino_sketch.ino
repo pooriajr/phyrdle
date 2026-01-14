@@ -208,7 +208,9 @@ void testRandomization() {
   Serial.println("Randomization test complete");
 }
 
-void setup() {
+void setup() { 
+  analogReference(EXTERNAL);
+  
   // Initialize serial communication
   Serial.begin(9600);
   

@@ -6,7 +6,7 @@
 #include "slot.h"  // Include slot.h to access the slot states
 
 // FastLED setup
-#define LED_PIN     5     // Pin connected to the WS2812B LED strip
+#define LED_PIN     2     // Pin connected to the WS2812B LED strip
 #define NUM_LEDS    5     // Number of LEDs in the strip
 #define LED_TYPE    WS2812B
 #define COLOR_ORDER GRB
