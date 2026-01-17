@@ -185,7 +185,7 @@ Slot slot1(A0);  // Using analog pin A0
 Slot slot2(A1);  // Using analog pin A1
 Slot slot3(A2);  // Using analog pin A2
 Slot slot4(A3);  // Using analog pin A3
-Slot slot5(A4);  // Using analog pin A4
+Slot slot5(A6);  // Using analog pin A6
 Slot slots[SLOT_COUNT] = {slot1, slot2, slot3, slot4, slot5};
 
 // Function to test randomization by printing multiple random words
