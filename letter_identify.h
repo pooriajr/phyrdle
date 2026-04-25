@@ -32,7 +32,7 @@ String identify(int analogRead) {
       case 182 ... 196: return "X";
       case 167 ... 181: return "Y";
       case 117 ... 137: return "Z";
-      default: return String(analogRead);
+      default: return "?";
   }
 }
 
