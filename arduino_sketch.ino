@@ -16,13 +16,15 @@
 #include <LiquidCrystal_I2C.h>
 #include <Wire.h>
 
-#define CHECK_INTERVAL 100 // milliseconds
+#define CHECK_INTERVAL 5 // milliseconds between input scans
+#define WIN_ANIMATION_INTERVAL 100 // preserve the current rainbow speed
 #define SLOT_COUNT 5
 #define WIN_TIMEOUT 5000  // 3 seconds in milliseconds
 #define LOG_INTERVAL 1000 // 1 second in milliseconds
 #define LCD_ADDR 0x27
 #define LCD_COLS 20
 #define LCD_ROWS 4
+#define ENABLE_RUNTIME_DIAGNOSTICS false
 
 // Forward declaration of global variables
 extern Dictionary dictionary;
@@ -33,7 +35,8 @@ bool gameWon = false;
 unsigned long winTimestamp = 0;
 unsigned long lastLogTimestamp = 0; // For controlling log frequency
 unsigned long lastLcdUpdate = 0;    // For controlling LCD refresh rate
-bool lcdEnabled = true; // Optional diagnostics; set true to enable LCD readings
+String lastReportedWord = "";       // Avoid repeatedly logging an unchanged word
+bool lcdEnabled = ENABLE_RUNTIME_DIAGNOSTICS;
 
 LiquidCrystal_I2C lcd(LCD_ADDR, LCD_COLS, LCD_ROWS);
 
@@ -323,7 +326,7 @@ void loop() {
   if (gameWon) {
     // Use the rainbow animation instead of the regular LED update
     updateRainbowAnimation();
-    delay(CHECK_INTERVAL);
+    delay(WIN_ANIMATION_INTERVAL);
     return;
   }
 
@@ -345,12 +348,14 @@ void loop() {
   if (allSlotsHaveLetters) {
     check_word();
   } else {
+    lastReportedWord = "";
     // Otherwise, just update LEDs based on current slot states
     board.light(slots, SLOT_COUNT);
   }
 
   // Log only once per second
-  if (currentTime - lastLogTimestamp >= LOG_INTERVAL) {
+  if (ENABLE_RUNTIME_DIAGNOSTICS &&
+      currentTime - lastLogTimestamp >= LOG_INTERVAL) {
     // Print target word
     Serial.print("Target word: ");
     Serial.println(targetWord);
@@ -381,10 +386,14 @@ void check_word() {
   // Light up the board based on the evaluation
   board.light(slots, SLOT_COUNT);
 
-  // Only log for valid words or invalid words (not incomplete)
-  if (currentWord.status != Word::INCOMPLETE) {
+  String currentWordText = currentWord.getWord();
+
+  // Only log when the completed word changes. Reprinting it on every fast
+  // input scan can fill the serial buffer and delay subsequent ADC reads.
+  if (currentWord.status != Word::INCOMPLETE &&
+      currentWordText != lastReportedWord) {
     Serial.print("Word: ");
-    Serial.print(currentWord.getWord());
+    Serial.print(currentWordText);
     Serial.print(" - Status: ");
 
     switch (currentWord.status) {
@@ -398,6 +407,8 @@ void check_word() {
       Serial.println("VALID");
       break;
     }
+
+    lastReportedWord = currentWordText;
   }
 
   // Check if the game has been won
