@@ -6,9 +6,25 @@
 #include "slot.h"  // Include slot.h to access the slot states
 
 // FastLED setup
-#define LED_PIN     2     // Pin connected to the WS2812B LED strip
+#ifndef USE_FOUR_PIN_LED_STRIP
+#define USE_FOUR_PIN_LED_STRIP false // fallback value, to change, set in arduino_sketch.ino
+#endif
+
+#ifndef THREE_PIN_LED_DATA_PIN
+#define THREE_PIN_LED_DATA_PIN 2
+#endif
+
+#ifndef FOUR_PIN_LED_DATA_PIN
+#define FOUR_PIN_LED_DATA_PIN 11
+#endif
+
+#ifndef FOUR_PIN_LED_CLOCK_PIN
+#define FOUR_PIN_LED_CLOCK_PIN 13
+#endif
+
 #define NUM_LEDS    5     // Number of LEDs in the strip
-#define LED_TYPE    WS2812B
+#define THREE_PIN_LED_TYPE WS2812B
+#define FOUR_PIN_LED_TYPE APA102
 #define COLOR_ORDER GRB
 
 // Define the LED array directly in this file
@@ -24,7 +40,11 @@ uint8_t gHue = 0; // rotating "base color" used by rainbow effect
 // Initialize the LED strip
 void setupLighting() {
   // Initialize FastLED
-  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+#if USE_FOUR_PIN_LED_STRIP
+  FastLED.addLeds<FOUR_PIN_LED_TYPE, FOUR_PIN_LED_DATA_PIN, FOUR_PIN_LED_CLOCK_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+#else
+  FastLED.addLeds<THREE_PIN_LED_TYPE, THREE_PIN_LED_DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+#endif
   FastLED.setBrightness(50);  // Set brightness to 50 (0-255)
   
   // Clear all LEDs

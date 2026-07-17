@@ -1,5 +1,14 @@
 #include "dictionary.h" // Include our new dictionary header
 #include "letter_identify.h"
+
+// LED strip selection:
+//   false = 3-pin WS2812B strip on THREE_PIN_LED_DATA_PIN
+//   true  = 4-pin APA102/DotStar-style strip with DI/CI pins below
+#define USE_FOUR_PIN_LED_STRIP true
+#define THREE_PIN_LED_DATA_PIN 2
+#define FOUR_PIN_LED_DATA_PIN 11  // DI
+#define FOUR_PIN_LED_CLOCK_PIN 13 // CI
+
 #include "lighting.h" // Include the lighting header
 #include "logging.h"
 #include "slot.h"
