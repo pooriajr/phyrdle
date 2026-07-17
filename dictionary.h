@@ -68,8 +68,14 @@ class Dictionary {
     bool isValid(String word) {
       // Convert input to uppercase for comparison
       word.toUpperCase();
-      
-      // Use binary search for efficient lookup
+
+      // Accept regular plural-looking guesses without adding them to the
+      // target-answer dictionary. This covers -s, -es, and -ies endings.
+      if (word.length() == WORD_LENGTH && word[WORD_LENGTH - 1] == 'S') {
+        return true;
+      }
+
+      // Use binary search for all other guesses.
       return binarySearch(word);
     }
     
@@ -83,4 +89,4 @@ class Dictionary {
     }
 };
 
-#endif // DICTIONARY_H 
+#endif // DICTIONARY_H
