@@ -25,7 +25,8 @@
 #define NUM_LEDS    5     // Number of LEDs in the strip
 #define THREE_PIN_LED_TYPE WS2812B
 #define FOUR_PIN_LED_TYPE APA102
-#define COLOR_ORDER GRB
+#define THREE_PIN_COLOR_ORDER GRB
+#define FOUR_PIN_COLOR_ORDER BGR
 
 // Define the LED array directly in this file
 CRGB leds[NUM_LEDS];
@@ -41,9 +42,9 @@ uint8_t gHue = 0; // rotating "base color" used by rainbow effect
 void setupLighting() {
   // Initialize FastLED
 #if USE_FOUR_PIN_LED_STRIP
-  FastLED.addLeds<FOUR_PIN_LED_TYPE, FOUR_PIN_LED_DATA_PIN, FOUR_PIN_LED_CLOCK_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<FOUR_PIN_LED_TYPE, FOUR_PIN_LED_DATA_PIN, FOUR_PIN_LED_CLOCK_PIN, FOUR_PIN_COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 #else
-  FastLED.addLeds<THREE_PIN_LED_TYPE, THREE_PIN_LED_DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+  FastLED.addLeds<THREE_PIN_LED_TYPE, THREE_PIN_LED_DATA_PIN, THREE_PIN_COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 #endif
   FastLED.setBrightness(50);  // Set brightness to 50 (0-255)
   
