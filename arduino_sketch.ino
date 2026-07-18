@@ -283,7 +283,7 @@ void testRandomization() {
 }
 
 void setup() {
-  analogReference(INTERNAL);
+  analogReference(DEFAULT);
 
   // Initialize serial communication
   Serial.begin(9600);

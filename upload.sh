@@ -1,13 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -euo pipefail
 
 # Script to compile and upload Arduino sketch
-echo "Compiling and uploading arduino_sketch.ino..."
+FQBN="arduino:avr:nano"
+PORT="${1:-/dev/cu.usbserial-10}"
+SKETCH_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 
-arduino-cli compile --fqbn arduino:avr:mega arduino_sketch.ino && 
-arduino-cli upload -p /dev/cu.usbmodem101 --fqbn arduino:avr:mega arduino_sketch.ino
+cd "$SKETCH_DIR"
 
-if [ $? -eq 0 ]; then
-  echo "Upload successful!"
-else
-  echo "Error during compilation or upload. Check the output above for details."
-fi 
+echo "Compiling arduino_sketch.ino for $FQBN..."
+arduino-cli compile --fqbn "$FQBN" arduino_sketch.ino
+
+echo "Uploading to $PORT..."
+arduino-cli upload --port "$PORT" --fqbn "$FQBN" arduino_sketch.ino
+
+echo "Upload successful!"
