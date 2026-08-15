@@ -32,7 +32,7 @@
 CRGB leds[NUM_LEDS];
 
 // Define colors and brightness levels
-#define DIM_WHITE  CRGB(10, 10, 10)   // Dim white for empty slots
+#define DIM_WHITE  CRGB(40, 40, 40)   // Dim white for empty slots
 #define BRIGHT_WHITE CRGB(255, 255, 255) // Bright white for full slots
 
 // Variables for rainbow animation

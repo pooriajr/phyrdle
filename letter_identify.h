@@ -2,38 +2,25 @@
 #define LETTER_IDENTIFY_H
 
 #include <Arduino.h>
+#include "hardware_profile.h"
 
-// Function to identify a letter from an analog reading
-String identify(int analogRead) {
-  switch (analogRead) {
-      case 920 ... 940: return "A";
-      case 881 ... 901: return "B";
-      case 843 ... 863: return "C";
-      case 815 ... 835: return "D";
-      case 765 ... 785: return "E";
-      case 739 ... 759: return "F";
-      case 703 ... 720: return "G";
-      case 685 ... 702: return "H";
-      case 665 ... 675: return "I";
-      case 640 ... 660: return "J";
-      case 594 ... 614: return "K";
-      case 561 ... 581: return "L";
-      case 519 ... 535: return "M";
-      case 501 ... 518: return "N";
-      case 475 ... 495: return "O";
-      case 449 ... 469: return "P";
-      case 403 ... 423: return "Q";
-      case 370 ... 390: return "R";
-      case 335 ... 355: return "S";
-      case 307 ... 327: return "T";
-      case 285 ... 305: return "U";
-      case 267 ... 284: return "V";
-      case 230 ... 250: return "W";
-      case 182 ... 196: return "X";
-      case 167 ... 181: return "Y";
-      case 117 ... 137: return "Z";
-      default: return "?";
+// Return an empty string for an empty slot, the identified letter for a valid
+// range, or "?" for an unrecognized reading between configured ranges.
+String identify(int analogReading) {
+  if (analogReading <= EMPTY_SLOT_MAX_ADC) {
+    return "";
   }
+
+  for (uint8_t i = 0; i < LETTER_ADC_RANGE_COUNT; i++) {
+    uint16_t minimum = pgm_read_word(&LETTER_ADC_RANGES[i].minimum);
+    uint16_t maximum = pgm_read_word(&LETTER_ADC_RANGES[i].maximum);
+
+    if (analogReading >= minimum && analogReading <= maximum) {
+      return String((char)pgm_read_byte(&LETTER_ADC_RANGES[i].letter));
+    }
+  }
+
+  return "?";
 }
 
 #endif // LETTER_IDENTIFY_H 

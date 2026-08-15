@@ -1,5 +1,11 @@
-.PHONY: upload
+.PHONY: compile upload
 
-upload:
-	arduino-cli compile --fqbn arduino:avr:mega arduino_sketch.ino && \
-	arduino-cli upload -p /dev/cu.usbmodem101 --fqbn arduino:avr:mega arduino_sketch.ino 
+FQBN := arduino:avr:nano
+PORT ?= /dev/cu.usbserial-10
+CPU_FREQUENCY := 8000000L
+
+compile:
+	arduino-cli compile --fqbn $(FQBN) --build-property build.f_cpu=$(CPU_FREQUENCY) arduino_sketch.ino
+
+upload: compile
+	arduino-cli upload --port $(PORT) --fqbn $(FQBN) arduino_sketch.ino

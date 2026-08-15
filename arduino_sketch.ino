@@ -1,3 +1,17 @@
+#include <avr/power.h>
+
+// The Nano has a 16 MHz crystal. Divide it by two before the Arduino runtime
+// initializes so timers, serial, I2C, and FastLED all operate at the 8 MHz
+// frequency supplied to the compiler by upload.sh/Makefile.
+#if F_CPU != 8000000L
+#error "Phyrdle must be compiled with F_CPU=8000000L"
+#endif
+
+void initClockPrescaler() __attribute__((naked, section(".init3"), used));
+void initClockPrescaler() {
+  clock_prescale_set(clock_div_2);
+}
+
 #include "dictionary.h" // Include our new dictionary header
 #include "letter_identify.h"
 
@@ -24,7 +38,7 @@
 #define LCD_ADDR 0x27
 #define LCD_COLS 20
 #define LCD_ROWS 4
-#define ENABLE_RUNTIME_DIAGNOSTICS false
+#define ENABLE_RUNTIME_DIAGNOSTICS true
 
 // Forward declaration of global variables
 extern Dictionary dictionary;
@@ -296,6 +310,8 @@ void setup() {
 
   // Print a test message
   Serial.println("Phyrdle starting up...");
+  Serial.print("Hardware profile: ");
+  Serial.println(HARDWARE_PROFILE_NAME);
   Serial.println("Serial monitor test - if you can see this, serial "
                  "communication is working!");
 
@@ -338,7 +354,9 @@ void loop() {
   // Check if all slots have letters (potential word to check)
   bool allSlotsHaveLetters = true;
   for (int i = 0; i < SLOT_COUNT; i++) {
-    if (slots[i].state != FULL) {
+    // A slot's state is also used for Wordle result colors. Its accepted
+    // letter is the single source of truth for physical occupancy.
+    if (slots[i].letter.length() == 0) {
       allSlotsHaveLetters = false;
       break;
     }
@@ -461,7 +479,6 @@ void resetGame() {
 
   // Reset all slots to EMPTY state
   for (int i = 0; i < SLOT_COUNT; i++) {
-    slots[i].state = EMPTY;
-    slots[i].letter = "";
+    slots[i].reset();
   }
 }
