@@ -7,10 +7,6 @@ const char HARDWARE_PROFILE_NAME[] = "wide-4.7k";
 // so keep a gap between the empty threshold and O's accepted range.
 const uint16_t EMPTY_SLOT_MAX_ADC = 25;
 
-// The wider separation permits quicker confirmation than the legacy profile.
-const uint16_t INSERT_STABLE_MS = 15;
-const uint16_t REPLACE_STABLE_MS = 75;
-
 // Initial ranges derived from "Phyrdle Resistor Math - 4.7k.csv". Each
 // calculated ADC center is rounded to a 21-count window (center +/- 10).
 // These can be refined later with readings from assembled hardware.

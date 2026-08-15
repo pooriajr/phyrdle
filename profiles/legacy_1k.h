@@ -3,8 +3,6 @@
 
 const char HARDWARE_PROFILE_NAME[] = "legacy-1k";
 const uint16_t EMPTY_SLOT_MAX_ADC = 100;
-const uint16_t INSERT_STABLE_MS = 25;
-const uint16_t REPLACE_STABLE_MS = 150;
 
 // These are the original calibrated ranges, preserved exactly for existing
 // hardware that uses the 1k fixed resistor configuration.

@@ -4,35 +4,6 @@
 #include <Arduino.h>
 #include "letter_identify.h"  // Include the letter identification header
 
-const uint8_t ADC_SAMPLE_COUNT = 9;
-
-// Read a channel several times and return the median. Discarding the first
-// conversion gives the ADC sample-and-hold capacitor time to settle after the
-// input multiplexer switches channels.
-int readFilteredAnalog(int pin) {
-  int samples[ADC_SAMPLE_COUNT];
-
-  analogRead(pin);
-
-  for (uint8_t i = 0; i < ADC_SAMPLE_COUNT; i++) {
-    samples[i] = analogRead(pin);
-  }
-
-  // Insertion sort is small and predictable for this nine-element array.
-  for (uint8_t i = 1; i < ADC_SAMPLE_COUNT; i++) {
-    int value = samples[i];
-    int8_t j = i - 1;
-
-    while (j >= 0 && samples[j] > value) {
-      samples[j + 1] = samples[j];
-      j--;
-    }
-    samples[j + 1] = value;
-  }
-
-  return samples[ADC_SAMPLE_COUNT / 2];
-}
-
 // Slot states
 enum slotState {
   EMPTY,    // no tile in the slot, show a dim white light
@@ -51,79 +22,23 @@ class Slot {
     slotState state;
     String letter;
     int signalValue; // Store the current analog signal value
-    String candidateLetter;
-    unsigned long candidateSince;
     
     // Constructor with default values
-    Slot() : pin(0), state(EMPTY), letter(""), signalValue(0),
-             candidateLetter(""), candidateSince(0) {}
+    Slot() : pin(0), state(EMPTY), letter(""), signalValue(0) {}
     
     // Constructor with pin
-    Slot(int p) : pin(p), state(EMPTY), letter(""), signalValue(0),
-                  candidateLetter(""), candidateSince(0) {}
+    Slot(int p) : pin(p), state(EMPTY), letter(""), signalValue(0) {}
 
     void reset() {
       state = EMPTY;
       letter = "";
       signalValue = 0;
-      candidateLetter = "";
-      candidateSince = 0;
     }
     
     // Method to read analog signal and identify letter
     void readLetter() {
-      signalValue = readFilteredAnalog(pin);
-
-      String observedLetter = identify(signalValue);
-
-      // The median filter has already rejected brief ADC spikes, so an empty
-      // reading can be applied immediately. Keeping a removed letter during a
-      // second debounce stage made its old LED linger while the tile was
-      // already being accepted by another slot.
-      if (observedLetter.length() == 0) {
-        letter = "";
-        candidateLetter = "";
-        candidateSince = 0;
-        state = EMPTY;
-        return;
-      }
-
-      // Ignore readings that fall between calibrated letter ranges. A brief
-      // noisy sample should not replace a previously accepted letter.
-      if (observedLetter == "?") {
-        candidateLetter = "";
-        candidateSince = 0;
-        state = letter.length() > 0 ? FULL : EMPTY;
-        return;
-      }
-
-      // Seeing the accepted letter again cancels any pending change. This is
-      // what prevents an occasional valid-but-wrong reading from flickering
-      // the LEDs or causing the word to be re-evaluated incorrectly.
-      if (observedLetter == letter) {
-        candidateLetter = "";
-        candidateSince = 0;
-        state = FULL;
-        return;
-      }
-
-      unsigned long now = millis();
-      if (observedLetter != candidateLetter) {
-        candidateLetter = observedLetter;
-        candidateSince = now;
-      }
-
-      // Letter-to-letter changes get stronger debounce than insertion because
-      // ADC noise can otherwise look exactly like another valid letter.
-      unsigned long requiredStableTime =
-          letter.length() == 0 ? INSERT_STABLE_MS : REPLACE_STABLE_MS;
-
-      if (now - candidateSince >= requiredStableTime) {
-        letter = candidateLetter;
-        candidateLetter = "";
-        candidateSince = 0;
-      }
-
+      signalValue = analogRead(pin);
+      letter = identify(signalValue);
       state = letter.length() > 0 ? FULL : EMPTY;
     }
 };
