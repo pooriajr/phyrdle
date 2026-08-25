@@ -38,7 +38,7 @@ void initClockPrescaler() {
 #define LCD_ADDR 0x27
 #define LCD_COLS 20
 #define LCD_ROWS 4
-#define ENABLE_RUNTIME_DIAGNOSTICS true
+#define ENABLE_RUNTIME_DIAGNOSTICS false
 
 // Forward declaration of global variables
 extern Dictionary dictionary;
