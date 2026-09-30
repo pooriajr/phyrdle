@@ -2,6 +2,7 @@
 #define SLOT_H
 
 #include <Arduino.h>
+#include "adc_average.h"
 #include "letter_identify.h"  // Include the letter identification header
 
 // Slot states
@@ -21,6 +22,8 @@ class Slot {
     int pin;
     slotState state;
     String letter;
+    AdcAverage adcAverage;
+    int rawValue = 0;
     int signalValue; // Store the current analog signal value
     
     // Constructor with default values
@@ -33,11 +36,14 @@ class Slot {
       state = EMPTY;
       letter = "";
       signalValue = 0;
+      rawValue = 0;
+      adcAverage.reset();
     }
     
     // Method to read analog signal and identify letter
     void readLetter() {
-      signalValue = analogRead(pin);
+      rawValue = analogRead(pin);
+      signalValue = adcAverage.update(rawValue, millis());
       letter = identify(signalValue);
       state = letter.length() > 0 ? FULL : EMPTY;
     }

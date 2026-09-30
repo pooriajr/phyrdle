@@ -1,0 +1,12 @@
+.usbasp-profile
+
+.usbasp-diagnostic-profile
+
+profiles/*.calibration.json
+profiles/*.calibration.json.tmp
+__pycache__/
+
+.calibration-defaults.json
+.calibration-defaults.tmp
+
+build/

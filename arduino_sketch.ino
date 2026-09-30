@@ -12,6 +12,10 @@ void initClockPrescaler() {
   clock_prescale_set(clock_div_2);
 }
 
+#if defined(PHYRDLE_RESISTOR_DIAGNOSTIC) && PHYRDLE_RESISTOR_DIAGNOSTIC
+#include "resistor_diagnostic.h"
+#else
+
 #include "dictionary.h" // Include our new dictionary header
 #include "letter_identify.h"
 
@@ -482,3 +486,5 @@ void resetGame() {
     slots[i].reset();
   }
 }
+
+#endif // PHYRDLE_RESISTOR_DIAGNOSTIC
