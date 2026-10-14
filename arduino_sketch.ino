@@ -29,6 +29,7 @@ void initClockPrescaler() {
 
 #include "lighting.h" // Include the lighting header
 #include "logging.h"
+#include "rng_seed.h"
 #include "slot.h"
 #include <FastLED.h>
 
@@ -256,6 +257,9 @@ void setup() {
   Serial.println("Serial monitor test - if you can see this, serial "
                  "communication is working!");
 
+  // Seed once per boot. Later games draw the next word from this sequence.
+  seedRandomOnce();
+
   // Test randomization
   testRandomization();
 
@@ -393,18 +397,7 @@ void resetGame() {
   // Reset LED brightness back to normal
   FastLED.setBrightness(50);
 
-  // Improve randomization by using multiple analog reads
-  // This creates a more unpredictable seed value
-  long randomSeed1 = analogRead(A5); // Use an unconnected analog pin
-  delay(5);                          // Small delay to get different readings
-  long randomSeed2 = analogRead(A5);
-  delay(5);
-  long randomSeed3 = analogRead(A5);
-
-  // Combine the readings to create a more random seed
-  randomSeed((randomSeed1 * randomSeed2) ^ randomSeed3 ^ millis());
-
-  // Pick a new target word
+  // Pick a new target word. The RNG is seeded once in setup().
   targetWord = dictionary.randomWord();
 
   // Always log the new target word
