@@ -1,0 +1,14 @@
+{
+  "frequency_source": "https://github.com/IlyaSemenov/wikipedia-word-frequency",
+  "frequency_download": "https://raw.githubusercontent.com/IlyaSemenov/wikipedia-word-frequency/master/results/enwiki-2023-04-13.txt",
+  "frequency_snapshot": "2023-04-13",
+  "frequency_source_sha256": "e2071140a49a6c40c732bd68c36836ef13c0978233fb3d5e1b2a3c2d34faef59",
+  "subset_method": "Retain every source row whose word occurs in known_pool.txt; keep its original count. No rank cutoff, repeat-letter filter, or blocklist is applied to this source snapshot.",
+  "frequency_subset_sha256": "6dcd8903f9a016b65573a65e32de194889a71a68ab4cbe57f31fb63d1473569e",
+  "frequency_subset_rows": 5151,
+  "known_pool_source": "Supplied WordSet data/known_pool.txt; lowercase five-letter entries from the included SCOWL/ESDB size-60 US export.",
+  "known_pool_sha256": "376b37f4700c53809bc496817541a6753fd1722ae61bb426f2deda9bab0b3337",
+  "known_pool_rows": 5200,
+  "known_pool_revision": "1e5b7d3 (2026-06-24)",
+  "blocklist_source": "Supplied WordSet lists/answer_blocklist.txt, adapted in that project from LDNOOBW and manual exclusions."
+}

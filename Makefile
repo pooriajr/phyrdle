@@ -13,6 +13,7 @@ dictionary-check:
 	python3 words/build_dictionary.py --check
 
 test-dictionary: dictionary-check
+	python3 tests/test_answer_selection.py
 	@set -e; test_binary=$$(mktemp /tmp/phyrdle-dictionary.XXXXXX); \
 	trap 'rm -f "$$test_binary"' EXIT; \
 	$(TEST_CXX) -O2 -std=c++17 -Wall -Wextra -pedantic -Itests/arduino_stub \

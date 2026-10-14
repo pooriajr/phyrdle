@@ -1,0 +1,36 @@
+# Words excluded from the ANSWER set. They remain legal GUESSES, the same way
+# Wordle accepts words it will never choose as the solution.
+#
+# Everything here was flagged by hand from the generated answer list, plus the
+# five-letter entries of the LDNOOBW public profanity list. Edit freely and
+# run make dictionary -- ordinary words that merely read as grim
+# (death, kills, slave, crash) are deliberately NOT listed.
+#
+# slurs
+dykes
+gypsy
+negro
+queer
+# sexual / anatomical
+bimbo
+booby
+cocks
+dicks
+horny
+kinky
+nudes
+penis
+pimps
+porno
+pussy
+semen
+skeet
+sperm
+whore
+# sexual violence
+raped
+rapes
+# crude
+bitch
+fecal
+sucks

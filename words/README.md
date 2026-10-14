@@ -1,57 +1,86 @@
 # Phyrdle dictionary
 
-The game accepts **11,736 dictionary guesses** while choosing targets only
-from the **2,138 existing curated words**, all with five distinct letters.
-`dictionary.h` preserves the game's uppercase `String` API; the compressed
-WordSet library works in lowercase internally.
+The game accepts **11,736 guesses** and picks its target from the **1,500 most
+frequent eligible five-letter words in the supplied English Wikipedia snapshot
+(April 13, 2023)**. Targets have five distinct letters for the physical tiles.
+The previous target pool is replaced; Wikipedia frequencies now determine
+which words can be targets.
 
-## Editing the lists
+## How targets are selected
 
-- `answers.txt`: the complete curated target pool, one lowercase word per line.
-  Keep it sorted, unique, and free of repeated letters for the physical tiles.
-- `guesses.txt`: the broad guess dictionary. Repeated letters are allowed here.
-  It contains the supplied 11,713-word dictionary plus `amaro`, `masse`,
-  `unsee`, and `yeesh` from the existing `wordle_official_list.txt`.
-- The generator automatically adds all answers to the accepted guesses. That
-  preserves 19 local targets absent from the supplied dictionary:
-  `capri crema flowy glamp glowy hacky hinky incel janky judgy koran mochi nutso
-  petri queso quran tased untag vitro`.
+`build_answers.py` applies these rules before taking the top 1,500:
+
+1. Exactly five lowercase letters, in the supplied SCOWL/ESDB size-60 US pool.
+   This conservative dictionary filter reduces names, abbreviations, and raw
+   Wikipedia token noise; it is not a manual review of every word.
+2. Five distinct letters, so no target needs a duplicate physical tile.
+3. Exclude entries in `answer_blocklist.txt`, copied from the supplied project.
+   Blocked targets can still be guesses.
+4. Sort by decreasing Wikipedia occurrence count, with alphabetical ties.
+
+There are 3,429 eligible candidates. The 1,500th target is `harms`, at 3,355
+occurrences. The first ten are `first their after other would years later world
+while about`. The last ten are `beryl craze quark gated nadir bulky oriel hinge
+evils harms`.
+
+These are the top 1,500 **after filtering**, not the first 1,500 raw Wikipedia
+tokens. Wikipedia frequency reflects encyclopedia writing, so some terms are
+still specialized. Plurals and inflected forms are allowed if eligible. A
+frequency ranking does not guarantee that every entry is a familiar puzzle
+answer.
+
+## Reviewing and regenerating
+
+- `answer_ranking.tsv`: all selected targets, in frequency order, with their
+  rank and exact occurrence count. Use this to review the cutoff.
+- `answers.txt`: the same selected targets alphabetically, for the encoder.
+  This file is generated; do not edit it directly.
+- `answer_blocklist.txt`: editable answer exclusions; selection backfills from
+  the next eligible words when exclusions change.
+- `guesses.txt`: the broad guess dictionary, including regional spellings,
+  repeated-letter words, and obscure entries. It retains all 11,736 words
+  accepted by the initial integration, even when they are no longer targets.
+- `sources/known_pool.txt`: the supplied 5,200-word conservative dictionary.
+- `sources/enwiki-2023-04-13-conservative.tsv`: every Wikipedia frequency row
+  matching that dictionary, before the distinct-letter or blocklist filters.
+  All 5,151 matching rows are included; there is no frequency cutoff here.
+- `sources/provenance.json`: source URLs, revisions, row counts, and SHA-256
+  hashes for the original 33 MB frequency file and committed snapshots.
 
 From the sketch directory:
 
 ```sh
-make dictionary          # regenerate src/wordset/wordset_data.h
-make dictionary-check    # fail if committed data differs from the lists
-make test-dictionary     # regeneration check + exhaustive native tests
+make dictionary          # select targets, write ranking, then compress all data
+make dictionary-check    # verify targets, ranking, source hashes, and encoded data
+make test-dictionary     # selection-policy tests + exhaustive native tests
 make compile             # complete Arduino Nano game at 8 MHz
 ```
 
-Commit the edited lists and generated header together. Ordinary Arduino IDE
-and upload-script builds use the committed header and need no Python or
-separate library installation. `wordle_official_list.txt` remains historical
-source material; edit `words/answers.txt` to change targets now. The former
-`word_list.h`, duplicate `filtered_word_list.h`, and filter script were retired
-so there is one authoritative target list.
+`ANSWER_COUNT` in `build_answers.py` controls the target count (currently 1,500).
+To exclude a target, edit the blocklist and run `make dictionary`. Commit
+`answers.txt`, `answer_ranking.tsv`, and `src/wordset/wordset_data.h` together.
+No downloads or sibling folders are needed to regenerate from the committed
+snapshots. Ordinary Arduino IDE and upload-script builds use the committed
+header and require neither Python nor a separate library installation.
 
-The generator rejects malformed, duplicate, unsorted, or repeated-letter
-targets and rejects data that exceeds the decoder's index/bucket capacities.
+The original `wordle_official_list.txt` remains historical source material;
+it no longer controls targets. The former `word_list.h`, duplicate
+`filtered_word_list.h`, and old filter script have been retired. Input
+validation catches invalid target letters, duplicates, repeated target
+letters, and data exceeding the decoder's index/bucket capacities.
 
-## What is stored
+## How compression works
 
-Words are sorted into 676 buckets by their first two letters (`aa` to `zz`).
-A lookup jumps directly to that prefix's bucket. The remaining three letters
-are represented by numbers from 0 to 17,575. Instead of storing every number,
-the dictionary stores the gaps between successive numbers using Rice coding,
-with a compression setting selected separately for each bucket.
+Sorted guesses are grouped into 676 buckets by their first two letters.
+A lookup jumps directly to the corresponding prefix bucket. The last three
+letters become numbers from 0 to 17,575; the stream stores gaps between those
+numbers, Rice-coded with a setting chosen for each bucket. A lookup decodes
+just that bucket and stops once it finds or passes the sought suffix. The
+largest bucket has 210 words.
 
-Only that bucket is decoded, stopping as soon as the sought suffix is found
-or passed. The largest bucket has 210 words. Membership is exact: it does not
-use a probabilistic filter and never accepts a word absent from the generated
-list. Dictionary membership still reflects the chosen source's vocabulary;
-it is not a guarantee of every word's suitability for every English game.
-
-A bitmap marks which guess words are targets, at one bit per **guess**, so
-answers do not store their spelling twice. The complete data occupies:
+An answer bitmap marks which guesses are targets, at one bit per **guess**.
+Increasing or reducing the answer count changes those flags without changing
+the bitmap's size or storing target spellings twice.
 
 | Component | Flash bytes |
 | --- | ---: |
@@ -62,85 +91,66 @@ answers do not store their spelling twice. The complete data occupies:
 | Target bitmap | 1,467 |
 | **Total** | **17,809** |
 
-Five-byte strings for these guesses alone would use 58,680 bytes, larger
-than the Nano's flash. This encoding reduces that by 69.7%, including target
-selection. It improves space efficiency; it trades binary search for a short
-sequential decode, so it should not be described as universally faster.
-Board timing has not been measured.
+Five-byte strings for these guesses alone would use 58,680 bytes. This
+encoding uses 69.7% less space, including target selection. Membership is
+exact, with no probabilistic false positives. It improves space efficiency;
+it should not be described as universally faster than binary search. Board
+timing has not been measured.
 
-Target draws continue to use the RNG seeded by the existing setup code and
-may repeat. WordSet also provides an optional no-repeat picker, but the game
-does not call it; its RAM tracker is removed by the linker. This integration
-does not write additional EEPROM history.
+`dictionary.h` preserves the game's uppercase `String` API; WordSet works in
+lowercase internally. Target draws continue to use the existing seeded RNG
+and may repeat. The optional WordSet no-repeat picker is not used, and its
+RAM tracker is removed by the linker. No additional EEPROM history is written.
 
-## Review of the supplied folder
+## Source review and validation
 
-The imported decoder and adapted encoder/test originated in `wikipedia words`,
-WordSet commit `d009fe3` (library metadata names Kris as author). The complete
-original folder is left intact alongside this repository.
+The decoder and adapted encoder/test originated in the supplied WordSet
+project, commit `d009fe3` (library metadata names Kris as author). Accepted
+guesses come from SCOWL/ESDB, rather than raw Wikipedia tokens. All 11,713
+supplied guesses matched the union of lowercase five-letter entries in its
+US/British/Canadian/Australian size-95 exports. The integration retains four
+additional words from the old source list and 19 former target words absent
+from that supplied dictionary, for 11,736 total guesses.
 
-The folder's name is slightly misleading: **accepted guesses come from
-SCOWL/ESDB dictionary exports**. Wikipedia token frequencies rank the friend's
-alternative 1,000-answer pool. That automatic answer pool is not used here:
-289 of its words repeat letters, and frequency alone is not game curation.
+The actual ESDB export headers identify revision `1e5b7d3`, June 24, 2026.
+Some supplied README counts and fetch-script variant settings differ from
+those actual files; committed snapshots are used here. The larger
+`words_alpha.txt` was not blindly merged because it includes abbreviations
+and name-like entries. The supplied word sets include offensive terms as
+guesses; target exclusions are controlled separately by the blocklist.
 
-Checks on the actual files:
+The old validator accepted any five-character string ending in `S`, including
+`ZZZZS`; this integration replaces that shortcut with dictionary membership.
 
-- All 11,713 supplied guesses are unique, sorted, lowercase five-letter words.
-  They match the union of lowercase five-letter entries in the included
-  US/British/Canadian/Australian size-95 exports exactly.
-- The original 1,000 answers are a subset of both its guesses and its
-  conservative dictionary pool. The provided decoder passed its original
-  exhaustive test, answer enumeration, and no-repeat-pool tests.
-- The download headers identify ESDB revision `1e5b7d3`, June 24, 2026, with
-  variant level 8 for the size-95 US file. The fetch script's requested variant
-  parameter and some README counts differ from those actual files. This
-  integration uses committed snapshots, with no downloads in regeneration.
-- The extra `data/words_alpha.txt` contains 15,921 five-letter entries, including
-  obvious abbreviations and name-like entries such as `accts`, `addnl`, and
-  `aaron`. It was not blindly merged. Raw Wikipedia tokens are not used as
-  valid guesses either.
-- The supplied set accepts regional spellings and obscure words and includes
-  offensive terms as guesses. It is broad, but no finite list covers every
-  valid English word. Add reviewed missing words to `guesses.txt`.
-- All 2,138 original target spellings were retained. The previous header
-  incorrectly declared 2,137 entries and placed `SYNTH` before `SYNOD`, breaking
-  the sort assumption and leaving the final word outside the declared range.
-  Generated counts and ordering correct those defects.
-- The old validator accepted every five-character string ending in `S`, even
-  `ZZZZS`. That shortcut is removed: real plurals must be dictionary entries.
+Tests verify filter-before-ranking behavior, alphabetical frequency ties,
+insufficient candidate handling, current source hashes, and exact agreement
+between generated targets and encoded data. The original 33 MB Wikipedia
+file was also checked independently against the final ranked selection.
+Native tests cover all guesses in both cases, malformed/nonsense inputs,
+every target, index boundaries, 10,000 random target draws, and the library's
+optional no-repeat API. They sweep all **11,881,376** five-letter strings to
+prove exact agreement with the guess list. The host shim covers the Arduino
+String/RNG interface used by the adapter; real AVR compilation is separate.
 
-## Validation and device budget
-
-`make test-dictionary` tests the real game adapter for all accepted words in
-both cases, mixed-case input, malformed/nonsense input, every curated target,
-index bounds, and 10,000 random target draws. It also tests the low-level
-library's full enumeration, answer membership, and no-repeat API and sweeps
-all **11,881,376** five-letter strings to prove exact agreement with the input
-lists. The host shim covers only the Arduino String/RNG interface used by the
-adapter; real-device compilation is checked separately.
-
-Nano builds (Arduino AVR core 1.8.8, FastLED 3.10.2, 8 MHz):
+Nano builds use Arduino AVR core 1.8.8, FastLED 3.10.2, and an 8 MHz CPU:
 
 | Build | Flash / 30,720 bytes | Static RAM / 2,048 bytes |
 | --- | ---: | ---: |
 | Original game | 21,356 | 1,094 |
-| Expanded dictionary, default profile | 29,242 (95%) | 1,088 (53%) |
-| Expanded dictionary, mean8 calibrated profile | 29,260 (95%) | 1,108 (54%) |
+| Wikipedia targets, default profile | 29,242 (95%) | 1,088 (53%) |
 
-The default-profile build leaves 1,478 bytes of flash and 960 bytes outside static
-RAM allocations. Static RAM reporting does not include runtime stack/heap use.
-No firmware was uploaded and physical-device responsiveness was not tested.
+The default build leaves 1,478 bytes of flash and 960 bytes outside static RAM
+allocations. Static RAM reporting does not include runtime stack/heap use.
+No firmware was uploaded; physical-device responsiveness has not been tested.
 
 ## Attribution
 
-`NOTICE.txt` preserves the complete notice from the supplied size-95 US export,
-including the ESDB permission and UK Advanced Cryptics Dictionary notice.
-Carry this with distributed dictionary data. The local target list's existing
-provenance is unchanged. Wikipedia ranking data and LDNOOBW's blocklist are
-not imported or used by this build.
+`NOTICE.txt` preserves the supplied ESDB/UK Advanced Cryptics Dictionary
+notices and adds the Wikipedia word-frequency project's MIT notice and
+LDNOOBW attribution for the supplied answer blocklist. Source URLs and
+snapshot hashes are in `sources/provenance.json`.
 
-The supplied WordSet project has no standalone code LICENSE file; its library
-metadata identifies its author but does not specify a code licence. This
-branch records that provenance; a redistribution licence for the copied
-WordSet code still needs to be established before publishing it.
+The supplied WordSet project has no standalone code LICENSE file. Its
+metadata names its author but does not specify a code licence; a
+redistribution licence for the copied WordSet code still needs to be
+established before publishing it.

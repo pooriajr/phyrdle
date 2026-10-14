@@ -1602,6 +1602,7 @@ caple
 capon
 capos
 capot
+capri
 capul
 caput
 carap
@@ -2211,6 +2212,7 @@ creek
 creel
 creep
 crees
+crema
 creme
 crena
 crepe
@@ -3542,6 +3544,7 @@ flour
 flout
 flown
 flows
+flowy
 flubs
 flued
 fluer
@@ -3982,6 +3985,7 @@ glads
 glady
 glaik
 glair
+glamp
 glams
 gland
 glans
@@ -4031,6 +4035,7 @@ glost
 glout
 glove
 glows
+glowy
 gloze
 glued
 gluer
@@ -4322,6 +4327,7 @@ hable
 habus
 hacek
 hacks
+hacky
 hadal
 haded
 hades
@@ -4556,6 +4562,7 @@ hilus
 hinds
 hinge
 hings
+hinky
 hinny
 hints
 hiply
@@ -4836,6 +4843,7 @@ inapt
 inarm
 inbox
 inbye
+incel
 incle
 incog
 incur
@@ -4949,6 +4957,7 @@ jambu
 james
 jammy
 janes
+janky
 janty
 japan
 japed
@@ -5069,6 +5078,7 @@ jubas
 jubes
 judas
 judge
+judgy
 judos
 jugal
 jugum
@@ -5357,6 +5367,7 @@ kophs
 kopje
 koppa
 korai
+koran
 koras
 korat
 kores
@@ -6318,6 +6329,7 @@ moats
 mobby
 moble
 mocha
+mochi
 mocks
 modal
 model
@@ -6846,6 +6858,7 @@ nurds
 nurls
 nurrs
 nurse
+nutso
 nutsy
 nutty
 nyaff
@@ -7353,6 +7366,7 @@ petal
 peter
 petit
 petre
+petri
 petro
 petti
 petto
@@ -7937,6 +7951,7 @@ queme
 quena
 quern
 query
+queso
 quest
 queue
 queys
@@ -7971,6 +7986,7 @@ quops
 quota
 quote
 quoth
+quran
 qursh
 rabat
 rabbi
@@ -10055,6 +10071,7 @@ tarsi
 tarts
 tarty
 tasar
+tased
 taser
 tasks
 tasse
@@ -10796,6 +10813,7 @@ unset
 unsew
 unsex
 unsod
+untag
 untax
 untie
 until
@@ -11027,6 +11045,7 @@ vitae
 vital
 vitas
 vitex
+vitro
 vitta
 vivas
 vivat
