@@ -54,7 +54,7 @@ class Dictionary {
   public:
     // Constructor
     Dictionary() {
-      // No initialization needed here - randomization is handled in resetGame()
+      // No initialization needed here - randomization is seeded once in setup()
     }
     
     // Get a random word from the list
