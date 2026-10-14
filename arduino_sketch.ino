@@ -36,7 +36,7 @@ void initClockPrescaler() {
 #define CHECK_INTERVAL 5 // milliseconds between input scans
 #define WIN_ANIMATION_INTERVAL 100 // preserve the current rainbow speed
 #define SLOT_COUNT 5
-#define WIN_TIMEOUT 5000  // 3 seconds in milliseconds
+#define WIN_TIMEOUT 8000  // 8 seconds in milliseconds
 #define LOG_INTERVAL 1000 // 1 second in milliseconds
 #define ENABLE_RUNTIME_DIAGNOSTICS false
 
