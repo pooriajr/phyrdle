@@ -120,3 +120,9 @@ The calibration CLI remembers the selected profile, last working serial port,
 window count, and padding. Run `./calibrate_profile.py` and press Enter at the
 menus to reuse them. Missing profiles/ports fall back to available choices.
 Explicit command-line options override and update these defaults.
+
+Insertion/removal resets the average when a raw sample crosses the profile’s
+empty threshold. The new state is reflected immediately rather than blending
+empty readings with the tile. Diagnostic LED history also resets at that
+transition. Full-second serial extrema still include transitions so the
+calibration CLI can exclude removal/contact windows.

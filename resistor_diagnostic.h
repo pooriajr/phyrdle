@@ -12,6 +12,7 @@
 const uint8_t DIAG_PINS[] = {A0, A1, A2, A3, A6};
 const uint8_t DIAG_WINDOW = 16;
 AdcAverage diagAverages[5];
+bool diagOccupied[5] = {};
 uint16_t diagReadings[5][DIAG_WINDOW];
 uint8_t diagPosition = 0, diagCount = 0;
 unsigned long diagLastScan = 0, diagLastLed = 0, diagLastLog = 0;
@@ -94,7 +95,14 @@ void loop() {
   if (now - diagLastScan < 5) return;
   diagLastScan = now;
   for (uint8_t slot = 0; slot < 5; ++slot) {
-    const uint16_t value = diagAverages[slot].update(analogRead(DIAG_PINS[slot]), now);
+    const uint16_t raw = analogRead(DIAG_PINS[slot]);
+    const bool occupied = raw > EMPTY_SLOT_MAX_ADC;
+    const uint16_t value = diagAverages[slot].update(raw, now, EMPTY_SLOT_MAX_ADC);
+    if (occupied != diagOccupied[slot]) {
+      // Clear LED history too, so normal insertion/removal is not a collision.
+      for (uint8_t i=0; i<DIAG_WINDOW; ++i) diagReadings[slot][i]=value;
+      diagOccupied[slot]=occupied;
+    }
     diagReadings[slot][diagPosition] = value;
     diagLogLow[slot]=min(diagLogLow[slot],value);diagLogHigh[slot]=max(diagLogHigh[slot],value);
 

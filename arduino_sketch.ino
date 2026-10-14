@@ -1,7 +1,7 @@
 #include <avr/power.h>
 
 // The Nano has a 16 MHz crystal. Divide it by two before the Arduino runtime
-// initializes so timers, serial, I2C, and FastLED all operate at the 8 MHz
+// initializes so timers, serial, and FastLED all operate at the 8 MHz
 // frequency supplied to the compiler by upload.sh/Makefile.
 #if F_CPU != 8000000L
 #error "Phyrdle must be compiled with F_CPU=8000000L"
@@ -31,17 +31,12 @@ void initClockPrescaler() {
 #include "logging.h"
 #include "slot.h"
 #include <FastLED.h>
-#include <LiquidCrystal_I2C.h>
-#include <Wire.h>
 
 #define CHECK_INTERVAL 5 // milliseconds between input scans
 #define WIN_ANIMATION_INTERVAL 100 // preserve the current rainbow speed
 #define SLOT_COUNT 5
 #define WIN_TIMEOUT 5000  // 3 seconds in milliseconds
 #define LOG_INTERVAL 1000 // 1 second in milliseconds
-#define LCD_ADDR 0x27
-#define LCD_COLS 20
-#define LCD_ROWS 4
 #define ENABLE_RUNTIME_DIAGNOSTICS false
 
 // Forward declaration of global variables
@@ -52,11 +47,7 @@ extern Slot slots[];
 bool gameWon = false;
 unsigned long winTimestamp = 0;
 unsigned long lastLogTimestamp = 0; // For controlling log frequency
-unsigned long lastLcdUpdate = 0;    // For controlling LCD refresh rate
 String lastReportedWord = "";       // Avoid repeatedly logging an unchanged word
-bool lcdEnabled = ENABLE_RUNTIME_DIAGNOSTICS;
-
-LiquidCrystal_I2C lcd(LCD_ADDR, LCD_COLS, LCD_ROWS);
 
 class Word {
 private:
@@ -226,60 +217,6 @@ Slot slot4(A3); // Using analog pin A3
 Slot slot5(A6); // Using analog pin A6
 Slot slots[SLOT_COUNT] = {slot1, slot2, slot3, slot4, slot5};
 
-void clearLcdLine(uint8_t row) {
-  lcd.setCursor(0, row);
-  for (int i = 0; i < LCD_COLS; i++) {
-    lcd.print(' ');
-  }
-}
-
-void printAnalogLine(uint8_t row, const char *label1, int value1,
-                     const char *label2, int value2) {
-  char line[LCD_COLS + 1];
-  if (label2 != nullptr) {
-    snprintf(line, sizeof(line), "%s:%4d(%s) %s:%4d(%s)", label1, value1, identify(value1).c_str(), label2,
-             value2, identify(value2).c_str());
-  } else {
-    snprintf(line, sizeof(line), "%s:%4d(%s)  %s", label1, value1, identify(value1).c_str(), targetWord.c_str());
-  }
-  clearLcdLine(row);
-  lcd.setCursor(0, row);
-  lcd.print(line);
-}
-
-void setupLcd() {
-  if (!lcdEnabled) {
-    return;
-  }
-  lcd.init(); // or lcd.begin(LCD_COLS, LCD_ROWS) on some library versions
-  lcd.backlight();
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Phyrdle LCD");
-  lcd.setCursor(0, 1);
-  lcd.print("J204A 20x4");
-}
-
-void updateLcdAnalogReadings(unsigned long currentTime) {
-  if (!lcdEnabled) {
-    return;
-  }
-  if (currentTime - lastLcdUpdate < LOG_INTERVAL) {
-    return;
-  }
-  lastLcdUpdate = currentTime;
-
-  int a0 = analogRead(A0);
-  int a1 = analogRead(A1);
-  int a2 = analogRead(A2);
-  int a3 = analogRead(A3);
-  int a6 = analogRead(A6);
-
-  printAnalogLine(0, "0", a0, "1", a1);
-  printAnalogLine(1, "2", a2, "3", a3);
-  printAnalogLine(2, "6", a6, nullptr, 0);
-}
-
 // Function to test randomization by printing multiple random words
 void testRandomization() {
   Serial.println("Testing randomization - printing 10 random words:");
@@ -327,8 +264,6 @@ void setup() {
 
   // Initialize the LED lighting
   setupLighting();
-
-  setupLcd();
 }
 
 void loop() {
@@ -387,11 +322,6 @@ void loop() {
 
     // Update the last log timestamp
     lastLogTimestamp = currentTime;
-  }
-
-  // Conditionally update the LCD with analog readings
-  if (!gameWon) {
-    updateLcdAnalogReadings(currentTime);
   }
 
   // Add a delay to avoid flooding the serial monitor

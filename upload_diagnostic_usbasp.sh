@@ -3,7 +3,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then
   printf 'Resistor diagnostic uploader (USBasp, Nano 8 MHz)\n'
-  printf 'Usage: ./upload_diagnostic_usbasp.sh [PROFILE | --last | --list]\n'
+  printf 'Usage: ./upload_diagnostic_usbasp.sh [PROFILE | --last | --list] [--no-compile]\n'
+  printf '%s\n' '--no-compile uploads the last compiled diagnostic build without prompting.'
   printf 'Profiles are discovered automatically from profiles/*.h; use --list to see them.\n'
   printf 'No arguments: profile picker; Enter recalls the last successful diagnostic profile.\n'
   printf 'Red: range changes/invalid. Yellow: near edge. Green: central 50%%.\n'

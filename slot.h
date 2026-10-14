@@ -43,7 +43,7 @@ class Slot {
     // Method to read analog signal and identify letter
     void readLetter() {
       rawValue = analogRead(pin);
-      signalValue = adcAverage.update(rawValue, millis());
+      signalValue = adcAverage.update(rawValue, millis(), EMPTY_SLOT_MAX_ADC);
       letter = identify(signalValue);
       state = letter.length() > 0 ? FULL : EMPTY;
     }

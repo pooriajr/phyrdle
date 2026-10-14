@@ -1847,6 +1847,7 @@ const char WORD_PACK[] PROGMEM =
   "SWORN"
   "SWUNG"
   "SYNCH"
+  "SYNTH"
   "SYNOD"
   "SYRUP"
   "TABLE"

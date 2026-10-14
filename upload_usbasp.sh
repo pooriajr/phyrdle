@@ -6,9 +6,17 @@ STATE_FILE="$SKETCH_DIR/.usbasp-profile"
 FQBN="arduino:avr:nano"
 DIAGNOSTIC="${PHYRDLE_UPLOAD_DIAGNOSTIC:-0}"
 EXTRA_FLAGS=""
+BUILD_DIR="$SKETCH_DIR/build/upload-usbasp"
+NO_COMPILE=0
+args=()
+for arg in "$@"; do
+  if [[ "$arg" == --no-compile ]]; then NO_COMPILE=1; else args+=("$arg"); fi
+done
+if [[ ${#args[@]} -gt 0 ]]; then set -- "${args[@]}"; else set --; fi
 if [[ "$DIAGNOSTIC" == 1 ]]; then
   STATE_FILE="$SKETCH_DIR/.usbasp-diagnostic-profile"
   EXTRA_FLAGS=" -DPHYRDLE_RESISTOR_DIAGNOSTIC=1"
+  BUILD_DIR="$SKETCH_DIR/build/upload-usbasp-diagnostic"
 fi
 
 # Derive CLI names from filenames (yageo_10k.h -> yageo-10k).
@@ -36,7 +44,8 @@ if [[ ${#profile_names[@]} -eq 0 ]]; then
 fi
 
 usage() {
-  printf 'Usage: %s [PROFILE | --last | --list]\n' "${0##*/}"
+  printf 'Usage: %s [PROFILE | --last | --list] [--no-compile]\n' "${0##*/}"
+  printf '%s\n' '--no-compile reuses the last compiled build for this mode without prompting.'
   printf 'Without arguments, choose a profile; Enter accepts the remembered choice.\n'
   printf 'Profiles discovered in profiles/:\n'
   printf '  %s\n' "${profile_names[@]}"
@@ -60,6 +69,14 @@ case "${1:-}" in
   --help|-h) usage; exit 0 ;;
   --list) printf '%s\n' "${profile_names[@]}"; exit 0 ;;
 esac
+if [[ "$NO_COMPILE" == 1 ]]; then
+  if [[ ! -f "$BUILD_DIR/arduino_sketch.ino.hex" || ! -f "$BUILD_DIR/profile" ]]; then
+    printf 'No saved build for this mode. Run once without --no-compile first.\n' >&2
+    exit 1
+  fi
+  compiled_profile="$(cat "$BUILD_DIR/profile")"
+  if [[ $# -eq 0 || "${1:-}" == --last ]]; then set -- "$compiled_profile"; fi
+fi
 previous="${profile_names[0]}"
 if find_profile yageo-10k; then previous=yageo-10k; fi
 if [[ -f "$STATE_FILE" ]]; then
@@ -96,14 +113,26 @@ choice="${profile_names[$selected_index]}"
 profile_file="${profile_files[$selected_index]}"
 command -v arduino-cli >/dev/null || { printf 'arduino-cli is required on PATH.\n' >&2; exit 1; }
 
-BUILD_DIR="$(mktemp -d "${TMPDIR:-/tmp}/tactle-usbasp.XXXXXX")"
-trap 'rm -rf -- "$BUILD_DIR"' EXIT
 if [[ "$DIAGNOSTIC" == 1 ]]; then printf 'Mode: resistor diagnostic\n'; fi
-printf 'Compiling %s for %s at 8 MHz...\n' "$choice" "$FQBN"
-arduino-cli compile --fqbn "$FQBN" \
-  --build-property build.f_cpu=8000000L \
-  --build-property "build.extra_flags=-DPHYRDLE_PROFILE_FILE=profiles/$profile_file$EXTRA_FLAGS" \
-  --build-path "$BUILD_DIR" "$SKETCH_DIR"
+if [[ "$NO_COMPILE" == 1 ]]; then
+  if [[ "$choice" != "$compiled_profile" ]]; then
+    printf 'Saved build uses profile %s, not %s. Run without --no-compile to change profiles.\n' "$compiled_profile" "$choice" >&2
+    exit 2
+  fi
+  printf 'Using last compiled build: %s\n' "$choice"
+else
+  mkdir -p "$SKETCH_DIR/build"
+  TEMP_BUILD="$(mktemp -d "$SKETCH_DIR/build/usbasp.XXXXXX")"
+  trap 'rm -rf -- "$TEMP_BUILD"' EXIT
+  printf 'Compiling %s for %s at 8 MHz...\n' "$choice" "$FQBN"
+  arduino-cli compile --fqbn "$FQBN" \
+    --build-property build.f_cpu=8000000L \
+    --build-property "build.extra_flags=-DPHYRDLE_PROFILE_FILE=profiles/$profile_file$EXTRA_FLAGS" \
+    --build-path "$TEMP_BUILD" "$SKETCH_DIR"
+  printf '%s\n' "$choice" > "$TEMP_BUILD/profile"
+  rm -rf -- "$BUILD_DIR"
+  mv -- "$TEMP_BUILD" "$BUILD_DIR"
+fi
 printf 'Uploading %s via USBasp and verifying...\n' "$choice"
 arduino-cli upload --fqbn "$FQBN" --programmer usbasp \
   --input-dir "$BUILD_DIR" --verify "$SKETCH_DIR"
