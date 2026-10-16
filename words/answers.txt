@@ -27,6 +27,7 @@ aimed
 aired
 aisle
 album
+alder
 alert
 alien
 align
@@ -54,7 +55,6 @@ angle
 angry
 angst
 anime
-anise
 ankle
 anode
 anvil
@@ -86,7 +86,6 @@ azure
 bacon
 badge
 badly
-bagel
 baked
 baker
 baldy
@@ -102,11 +101,11 @@ batch
 bathe
 batik
 baton
-bawdy
 bayou
 beach
 beard
 beast
+beaux
 began
 begin
 begum
@@ -118,8 +117,6 @@ bento
 berth
 beryl
 bight
-bigot
-bijou
 biker
 bilge
 binge
@@ -128,6 +125,7 @@ biome
 biota
 birch
 birth
+bison
 black
 blade
 blame
@@ -151,19 +149,17 @@ boast
 bogey
 bogie
 bogus
-boing
 bonus
 borax
 bored
 borne
-bough
 bound
 bowed
 bowel
 bower
 boxed
 boxer
-bract
+brace
 braid
 brain
 brake
@@ -175,6 +171,7 @@ brawl
 brawn
 bread
 break
+bream
 brick
 bride
 brief
@@ -224,6 +221,7 @@ caper
 cared
 cargo
 carol
+carpi
 carve
 caste
 cater
@@ -247,14 +245,12 @@ chief
 child
 chime
 china
-chine
 chino
 choir
 choke
 chord
 chose
 chunk
-churn
 chute
 cider
 cigar
@@ -288,11 +284,11 @@ coley
 comer
 comet
 coney
-conga
 copra
 copse
 coral
 corny
+corps
 cough
 could
 count
@@ -301,6 +297,7 @@ court
 coven
 cover
 coxed
+craft
 cramp
 crane
 crank
@@ -327,12 +324,10 @@ crumb
 crush
 crust
 crypt
-cumin
 cupid
 cured
 curia
 curie
-curio
 curly
 curse
 curve
@@ -380,6 +375,7 @@ dough
 dower
 downy
 dowry
+dozen
 draft
 drain
 drake
@@ -409,9 +405,9 @@ ebony
 edict
 eight
 elbow
-elfin
 email
 emits
+emoji
 empty
 enact
 endow
@@ -437,7 +433,6 @@ faint
 fairy
 faith
 faked
-fakir
 false
 famed
 fancy
@@ -446,7 +441,6 @@ fared
 fault
 favor
 feast
-feint
 felon
 femur
 feral
@@ -454,6 +448,7 @@ fetal
 fetch
 fetus
 fiber
+ficus
 field
 fiend
 fiery
@@ -473,7 +468,6 @@ fjord
 flack
 flair
 flake
-flaky
 flame
 flank
 flare
@@ -520,7 +514,9 @@ fritz
 front
 frost
 froze
+fruit
 fudge
+fungi
 funky
 fused
 gable
@@ -529,7 +525,6 @@ gamut
 gated
 gator
 gaunt
-gauze
 gecko
 genus
 ghost
@@ -558,6 +553,7 @@ grade
 graft
 grail
 grain
+grand
 grant
 grape
 graph
@@ -573,7 +569,6 @@ grind
 grist
 groin
 group
-grout
 grove
 grown
 grows
@@ -589,6 +584,7 @@ gulch
 gusto
 gusty
 habit
+haiku
 hairy
 hales
 handy
@@ -601,7 +597,6 @@ haunt
 haven
 havoc
 hazel
-heady
 heals
 heard
 hears
@@ -611,8 +606,8 @@ hefty
 heist
 helix
 heron
+hertz
 hijab
-hiker
 hinge
 hired
 hoard
@@ -625,6 +620,7 @@ honey
 honky
 hoped
 horde
+horse
 hotel
 hotly
 hound
@@ -636,10 +632,10 @@ humor
 husky
 hydra
 hydro
+hyena
 hyper
 ideal
 image
-imago
 imply
 incur
 index
@@ -664,7 +660,6 @@ jihad
 joint
 joked
 joker
-joule
 judge
 juice
 juicy
@@ -674,7 +669,6 @@ kanji
 kendo
 ketch
 kinda
-knelt
 knife
 krone
 labor
@@ -695,7 +689,6 @@ latex
 lathe
 laugh
 layer
-layup
 leach
 leafs
 leafy
@@ -718,6 +711,7 @@ lingo
 liter
 lived
 liver
+lives
 loamy
 lobed
 locus
@@ -726,10 +720,10 @@ lofty
 logic
 login
 loner
+loris
 loser
 lotus
 lough
-louse
 loved
 lover
 lower
@@ -769,6 +763,7 @@ maybe
 mayor
 meant
 medal
+media
 medic
 melon
 mercy
@@ -785,7 +780,6 @@ miner
 minor
 minus
 mired
-miser
 misty
 mixed
 mixer
@@ -828,10 +822,9 @@ naked
 named
 nasty
 navel
-nears
 neath
-nerdy
 newly
+nexus
 niche
 night
 nitro
@@ -843,6 +836,7 @@ nomad
 north
 notch
 noted
+novae
 novel
 nurse
 nymph
@@ -855,6 +849,7 @@ olive
 omega
 omits
 onset
+opera
 opium
 opted
 optic
@@ -880,7 +875,6 @@ paler
 palsy
 panel
 panic
-pansy
 parse
 party
 paste
@@ -889,18 +883,18 @@ patio
 patsy
 pause
 paved
-payer
 peach
 pearl
 pecan
 pedal
 penal
-peony
+perch
 peril
 petal
 phase
 phone
 phony
+phyla
 piano
 piety
 piled
@@ -927,17 +921,18 @@ plumb
 plume
 plush
 point
-poise
 poked
 poker
 polar
 polka
 ponce
 porch
+porgy
 porky
 posed
 posit
 pouch
+pound
 power
 prank
 prawn
@@ -959,13 +954,13 @@ proxy
 psalm
 psych
 pubic
-pubis
 pulse
 punch
 purge
 purse
 pylon
 quack
+quail
 quake
 quark
 quasi
@@ -1029,7 +1024,9 @@ ripen
 risen
 risky
 rival
+rives
 rivet
+roach
 roast
 robin
 rocky
@@ -1052,6 +1049,7 @@ rumba
 runic
 rusty
 saber
+sable
 sabre
 sadhu
 sadly
@@ -1079,10 +1077,10 @@ scarf
 scarp
 scary
 scent
-schwa
 scion
 scone
 scope
+score
 scorn
 scout
 scrap
@@ -1093,6 +1091,7 @@ scuba
 sedan
 sepal
 sepia
+septa
 serif
 serum
 servo
@@ -1110,6 +1109,7 @@ shank
 shape
 shard
 share
+shark
 sharp
 shave
 shawl
@@ -1131,7 +1131,6 @@ shout
 shove
 shown
 showy
-shred
 shrew
 shrub
 shunt
@@ -1139,7 +1138,6 @@ sibyl
 sight
 sigma
 silky
-silty
 since
 sired
 siren
@@ -1148,6 +1146,7 @@ sited
 sixth
 sixty
 sized
+skate
 skier
 skirt
 slack
@@ -1161,7 +1160,6 @@ slice
 slick
 slide
 slime
-slimy
 sling
 slope
 sloth
@@ -1169,6 +1167,7 @@ slump
 smack
 smart
 smear
+smelt
 smile
 smith
 smock
@@ -1179,6 +1178,7 @@ snail
 snake
 snare
 sneak
+snipe
 snout
 snowy
 sober
@@ -1203,7 +1203,6 @@ spent
 spice
 spicy
 spied
-spiel
 spike
 spine
 spiny
@@ -1219,6 +1218,7 @@ spray
 squad
 squat
 squaw
+squid
 stack
 stage
 stain
@@ -1245,6 +1245,7 @@ stoic
 stoke
 stole
 stomp
+stone
 stony
 store
 stork
@@ -1272,15 +1273,14 @@ sutra
 swain
 swami
 swamp
-swank
 swarm
 swath
 swear
 sweat
 swept
 swift
+swine
 swing
-swipe
 swirl
 sword
 swore
@@ -1363,7 +1363,6 @@ trial
 tribe
 trick
 tried
-tromp
 trope
 trove
 truce
@@ -1401,7 +1400,6 @@ usage
 usher
 using
 vague
-vagus
 valet
 valid
 valor
@@ -1413,7 +1411,6 @@ velar
 venom
 versa
 verso
-vetch
 vicar
 video
 vigor
@@ -1424,6 +1421,7 @@ viral
 virus
 visor
 vista
+vitae
 vital
 vixen
 vocal
@@ -1455,6 +1453,7 @@ weary
 weigh
 weird
 welsh
+whale
 wharf
 wheat
 while
@@ -1470,12 +1469,13 @@ wight
 winch
 windy
 wiped
-wiper
 wired
 wiser
 witch
+wives
 woken
 woman
+women
 world
 worse
 worst
@@ -1484,17 +1484,17 @@ would
 wound
 woven
 wrath
-wreak
 wreck
 wrest
 wrist
 write
 wrong
 wrote
-xylem
 yacht
 yeast
 yield
+young
 youth
+zebra
 zonal
 zoned

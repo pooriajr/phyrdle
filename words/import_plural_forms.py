@@ -30,20 +30,25 @@ def main():
     for group in groups:
         lines = group.split("\n")
         noun_lines = []
+        lemmas_by_spelling = {}
         for offset, line in enumerate(lines):
             if "<n" not in line:
                 continue
             match = core._matchLine(line)
             if match and match["base_pos"] == "n":
-                noun_lines.append((line_start + offset, match, core.parseLemmaPart(match["lemma"])))
-        fallback = next((part.lemma for _, _, part in noun_lines if part.lemma), None)
-        lemma = fallback
-        for number, match, part in noun_lines:
-            if part.lemma:
-                lemma = part.lemma
+                part = core.parseLemmaPart(match["lemma"])
+                spellings = core.Spellings.parse(match["spellings"] or "")
+                key = (spellings.key(), match["num"])
+                noun_lines.append((line_start + offset, match, part, spellings, key))
+                if part.lemma:
+                    if key in lemmas_by_spelling and lemmas_by_spelling[key] != part.lemma:
+                        raise ValueError(f"conflicting lemmas at line {line_start + offset}")
+                    lemmas_by_spelling[key] = part.lemma
+        for number, match, part, spellings, key in noun_lines:
+            lemma = lemmas_by_spelling.get(key)
             words = {}
             entry = core.WordEntry(part.lemma) if part.lemma else None
-            core.Line.procWords("_", entry, "n", match["words"], words)
+            core.Line.procWords(spellings.keys() if spellings else "_", entry, "n", match["words"], words)
             for pos in ("ns", "nss"):
                 for form in words.get(pos, []):
                     if form.word in known:

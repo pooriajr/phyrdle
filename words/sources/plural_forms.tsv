@@ -163,7 +163,7 @@ cafes	cafe	ns	53423
 caffs	caff	ns	53436
 cages	cage	ns	53464
 cakes	cake	ns	53626
-calks	caulking	ns	54186
+calks	calk	ns	54186
 calls	call	ns	54197
 calms	calm	ns	54407
 camos	camo	ns	54909
@@ -321,10 +321,10 @@ dills	dill	ns	105340
 dimes	dime	ns	105449
 dings	ding	ns	105667
 dirks	dirk	ns	106464
+discs	disc	ns	106882
 discs	disc	ns	106890
-discs	disk	ns	106882
-disks	disc	ns	106889
 disks	disk	ns	106883
+disks	disk	ns	106889
 divas	diva	ns	109937
 dives	dive	ns	109968
 docks	dock	ns	110585
@@ -515,7 +515,7 @@ genii	genius	ns	154938
 gents	gent	ns	155015
 germs	germ	ns	155715
 ghats	ghat	ns	156207
-gibes	jibe	ns	156457
+gibes	gibe	ns	156457
 gifts	gift	ns	156581
 gilds	gild	ns	156775
 gills	gill	ns	156815
@@ -551,11 +551,11 @@ gowns	gown	ns	161403
 grabs	grab	ns	161472
 grads	grad	ns	161568
 grams	gram	ns	161792
-grams	gramme	ns	161796
+grams	gram	ns	161796
 grand	grand	ns	161950
 grans	gran	ns	161930
+grays	gray	ns	162870
 grays	gray	ns	162884
-grays	grey	ns	162870
 grids	grid	ns	163783
 grins	grin	ns	163995
 grips	grip	ns	164038
@@ -666,7 +666,7 @@ items	item	ns	201552
 ivies	ivy	ns	201744
 jacks	jack	ns	201898
 jades	jade	ns	202195
-jails	gaol	ns	202317
+jails	jail	ns	202317
 jambs	jamb	ns	202450
 japes	jape	ns	202751
 jatos	jato	ns	202956
@@ -680,7 +680,7 @@ jibes	jibe	ns	156466
 jibes	jibe	ns	156471
 jiffs	jiff	ns	204008
 jilts	jilt	ns	204107
-jinns	djinni	ns	204225
+jinns	jinn	ns	204225
 jives	jive	ns	204292
 jocks	jock	ns	204408
 joeys	joey	ns	204511
@@ -790,7 +790,7 @@ lords	lord	ns	224610
 loris	loris	ns	224760
 loses	los	ns	224793
 louts	lout	ns	225117
-loves	luv	ns	225174
+loves	love	ns	225174
 luaus	luau	ns	225759
 lubes	lube	ns	225784
 lucks	luck	ns	225929
@@ -874,7 +874,7 @@ moats	moat	ns	245423
 mocks	mock	ns	245550
 modes	mode	ns	245641
 moils	moil	ns	246043
-molds	mould	ns	246156
+molds	mold	ns	246156
 moles	mole	ns	246200
 molls	moll	ns	246274
 molts	molt	ns	246359
@@ -901,7 +901,7 @@ muses	muse	ns	252511
 musts	must	ns	252825
 mutes	mute	ns	252969
 mutts	mutt	ns	253036
-mynas	mynah	ns	253437
+mynas	myna	ns	253437
 myths	myth	ns	253766
 naans	naan	ns	254440
 naifs	naif	ns	254184
@@ -941,7 +941,7 @@ oases	oasis	ns	266659
 oaths	oath	ns	266679
 obits	obit	ns	266861
 oboes	oboe	ns	267114
-odors	odour	ns	268382
+odors	odor	ns	268382
 ogles	ogle	ns	269000
 ogres	ogre	ns	269019
 oinks	oink	ns	269224
@@ -1029,7 +1029,7 @@ plies	ply	ns	299399
 plods	plod	ns	298805
 plops	plop	ns	298834
 plots	plot	ns	298844
-plows	plough	ns	298908
+plows	plow	ns	298908
 ploys	ploy	ns	298948
 plugs	plug	ns	298982
 plums	plum	ns	299012
@@ -1188,7 +1188,7 @@ sagas	saga	ns	340119
 sages	sage	ns	340153
 sails	sail	ns	340310
 sakes	sake	ns	340514
-sakes	saki	ns	340518
+sakes	sake	ns	340518
 sakis	saki	ns	340519
 sales	sale	ns	340658
 salts	salt	ns	341083
@@ -1370,7 +1370,7 @@ swigs	swig	ns	387444
 swims	swim	ns	387460
 swine	swine	ns	387520
 swots	swot	ns	387876
-syncs	synch	ns	388516
+syncs	sync	ns	388516
 tacks	tack	ns	389730
 tacos	taco	ns	389788
 tails	tail	ns	390056
@@ -1493,7 +1493,7 @@ veeps	veep	ns	429286
 veers	veer	ns	429290
 veils	veil	ns	429424
 veins	vein	ns	429447
-velds	veldt	ns	429531
+velds	veld	ns	429531
 vents	vent	ns	429964
 verbs	verb	ns	430186
 vests	vest	ns	430970
@@ -1554,7 +1554,7 @@ whens	when	ns	440234
 whets	whet	ns	440358
 whims	whim	ns	440506
 whips	whip	ns	440606
-whirs	whirr	ns	440712
+whirs	whir	ns	440712
 whits	whit	ns	440871
 wicks	wick	ns	441706
 wikis	wiki	ns	442023
@@ -1600,13 +1600,13 @@ yelps	yelp	ns	447885
 yeses	yes	ns	447965
 yetis	yeti	ns	448028
 yikes	yike	ns	448105
-yogis	yogin	ns	448231
+yogis	yogi	ns	448231
 yokes	yoke	ns	448268
 yolks	yolk	ns	448304
 young	young	ns	448433
 yours	your	ns	448497
 yowls	yowl	ns	448568
-yucks	yock	ns	447201
+yucks	yuck	ns	447201
 yucks	yuck	ns	447235
 yurts	yurt	ns	448807
 zebra	zebra	ns	449202

@@ -11,14 +11,29 @@ ANSWER_COUNT = 1500
 WORD = re.compile(r"[a-z]{5}")
 
 
-def rank_answers(frequencies, known_words, blocked, count, *, plurals):
+def is_regular_plural(word, lemma):
+    """Recognize the ordinary -s, -es, and consonant-y -> -ies patterns."""
+    return (word in {lemma + "s", lemma + "es"}
+            or (len(lemma) > 1 and lemma.endswith("y")
+                and lemma[-2] not in "aeiou" and word == lemma[:-1] + "ies"))
+
+
+def regular_plural_exclusions(forms):
+    """Keep a word eligible if any recorded noun sense has an irregular plural."""
+    regular, irregular = set(), set()
+    for word, lemma in forms:
+        (regular if is_regular_plural(word, lemma) else irregular).add(word)
+    return regular - irregular
+
+
+def rank_answers(frequencies, known_words, blocked, count, *, excluded_plurals):
     """Filter first, then rank by descending frequency with alphabetical ties."""
     if count <= 0:
         raise ValueError("answer count must be positive")
     eligible = [word for word in frequencies
                 if WORD.fullmatch(word) and len(set(word)) == 5
                 and word in known_words and word not in blocked
-                and word not in plurals
+                and word not in excluded_plurals
                 and frequencies[word] > 0]
     ranked = sorted(eligible, key=lambda word: (-frequencies[word], word))
     if len(ranked) < count:
@@ -50,17 +65,21 @@ def build_answers(check=False):
     if plural_rows[0] != "word\tlemma\tpos\tsource_line":
         raise ValueError("invalid plural source header")
     plurals = set()
+    plural_forms = []
     for row in plural_rows[1:]:
         word, lemma, pos, source_line = row.split("\t")
         if word not in known or not lemma or pos not in {"ns", "nss"} or int(source_line) < 1:
             raise ValueError(f"invalid plural row: {row}")
         plurals.add(word)
+        plural_forms.append((word, lemma))
     if (len(plural_rows) - 1 != metadata["plural_subset_rows"]
             or len(plurals) != metadata["plural_subset_words"]):
         raise ValueError("plural source counts do not match provenance.json")
     blocked = {line.split("#", 1)[0].strip()
                for line in (ROOT / "answer_blocklist.txt").read_text().splitlines()}
-    ranked, available = rank_answers(frequencies, known, blocked, ANSWER_COUNT, plurals=plurals)
+    ranked, available = rank_answers(
+        frequencies, known, blocked, ANSWER_COUNT,
+        excluded_plurals=regular_plural_exclusions(plural_forms))
     outputs = {
         "answers.txt": "".join(word + "\n" for word in sorted(ranked)),
         "answer_ranking.tsv": "rank\tword\twikipedia_occurrences\n" + "".join(

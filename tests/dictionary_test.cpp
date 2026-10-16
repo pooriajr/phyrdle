@@ -39,10 +39,13 @@ int main() {
   check(WordSet::answerCount() == answers.size(), "answerCount");
 
   // Target filtering must never narrow the accepted-guess dictionary.
-  for (const char *plural : {"years", "books", "cries", "wives", "women",
-                             "fungi", "media", "jeans", "pants"}) {
+  for (const char *plural : {"years", "books", "cries", "jeans", "pants"}) {
     check(WordSet::isValidGuess(plural), "plural was removed from guesses");
-    check(!WordSet::isAnswer(plural), "plural is still a target");
+    check(!WordSet::isAnswer(plural), "regular plural is still a target");
+  }
+  for (const char *irregular : {"fungi", "women", "media", "wives", "lives"}) {
+    check(WordSet::isValidGuess(irregular), "irregular plural was removed from guesses");
+    check(WordSet::isAnswer(irregular), "irregular plural was incorrectly excluded from targets");
   }
   for (const char *singular : {"virus", "bonus", "focus"})
     check(WordSet::isAnswer(singular), "singular ending in S was incorrectly filtered");

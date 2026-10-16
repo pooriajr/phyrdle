@@ -2,7 +2,7 @@
 
 The game accepts **11,736 guesses** and picks its target from the **1,500 most
 frequent eligible five-letter words in the supplied English Wikipedia snapshot
-(April 13, 2023)**. Targets have five distinct letters for the physical tiles and exclude noun plurals.
+(April 13, 2023)**. Targets have five distinct letters for the physical tiles and exclude regular noun plurals.
 The previous target pool is replaced; Wikipedia frequencies now determine
 which words can be targets.
 
@@ -16,32 +16,40 @@ which words can be targets.
 2. Five distinct letters, so no target needs a duplicate physical tile.
 3. Exclude entries in `answer_blocklist.txt`, copied from the supplied project.
    Blocked targets can still be guesses.
-4. Exclude words labelled as noun plurals (`ns`/`nss`) in the matching
-   ESDB revision. This catches regular forms such as `years` and `cries`,
-   irregular forms such as `women`, `fungi`, and `media`, and plural-only
-   words such as `jeans`. Singular words ending in S, including `virus`,
-   `bonus`, and `focus`, remain eligible.
+4. From the recorded ESDB noun-plural forms (`ns`/`nss`), exclude ordinary
+   `-s`, `-es`, and consonant-`y` to `-ies` plurals, such as `years`, `boxes`,
+   `cries`, and `jeans`. Irregular plurals such as `fungi`, `women`, `media`,
+   `wives`, and `lives` remain eligible. Singular words ending in S, including
+   `virus`, `bonus`, and `focus`, remain eligible as well.
 5. Sort by decreasing Wikipedia occurrence count, with alphabetical ties.
 
-There are 2,391 eligible candidates after filtering. The 1,500th target is
-`peony`, at 962 occurrences. The first ten are `first their after other would
-later world while about under`. The last ten are `poise swank wiper flaky
-hiker miser tromp anise bract peony`.
+There are 2,457 eligible candidates after filtering. The 1,500th target is
+`sager`, at 1,114 occurrences. The first ten are `first their after other would
+later world while about under`. The last ten are `civet gusty qubit dicky
+rives irate poked mulch flier sager`.
 
 These are the top 1,500 **after filtering**, not the first 1,500 raw Wikipedia
 tokens. Wikipedia frequency reflects encyclopedia writing, so some terms are
 still specialized. Other inflections, including past-tense and verb-only
-third-person forms, remain eligible; the requested restriction is noun
-plurals. A frequency ranking does not guarantee a familiar puzzle answer.
+third-person forms, remain eligible. A frequency ranking does not guarantee
+a familiar puzzle answer.
 
-Plural classification uses all noun entries in the pinned ESDB source,
-including uncommon inflections, rather than a trailing-S heuristic. It is
-conservative: a word listed as a noun plural is excluded even if it also has
-a singular, verb, or other meaning (`corps`, `trout`, and `chaos`, for example).
-The labelled source snapshot contains 1,620 records for 1,583 five-letter
-words from the conservative pool. It excluded 402 of the previous 1,500
-targets; the next eligible words backfilled the pool to 1,500. All of these
-words remain accepted guesses.
+Plural classification starts with actual noun inflections from the pinned
+ESDB source, rather than rejecting every word ending in S. The source
+snapshot contains 1,620 records for 1,583 words from the conservative pool.
+A form is considered regular if it matches its recorded lemma plus `s`,
+plus `es`, or a consonant-`y` to `ies` change. Other recorded forms, including
+`wife` to `wives` and unchanged singular/plural spellings such as `corps`,
+are treated as irregular. When a word has both regular and irregular noun
+readings, the irregular reading keeps it eligible.
+
+The source records match plural forms to singular lemmas by ESDB spelling
+and variant keys, so American forms such as `molds` are linked to `mold`
+instead of the neighboring British `mould` entry. This avoids treating normal
+plurals as irregular because of a spelling variant. The current policy
+excludes 1,482 regular-plural word forms from target selection; all remain
+accepted guesses. It restores 47 targets compared with excluding every noun
+plural, and the frequency-ranked target pool stays at 1,500 words.
 
 ## Reviewing and regenerating
 
@@ -152,7 +160,8 @@ guesses; target exclusions are controlled separately by the blocklist.
 The old validator accepted any five-character string ending in `S`, including
 `ZZZZS`; this integration replaces that shortcut with dictionary membership.
 
-Tests verify regular/irregular plural exclusion, preservation of singular
+Tests verify regular-plural exclusion, irregular-plural target eligibility,
+correct singular lemmas for spelling variants, preservation of singular
 S-ending targets, continued plural guess acceptance, filter-before-ranking
 behavior, alphabetical frequency ties,
 insufficient candidate handling, current source hashes, and exact agreement
