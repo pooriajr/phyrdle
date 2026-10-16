@@ -7,7 +7,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parent
-ANSWER_COUNT = 1500
+ANSWER_COUNT = 1000
 WORD = re.compile(r"[a-z]{5}")
 
 

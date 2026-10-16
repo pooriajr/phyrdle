@@ -1,6 +1,6 @@
 # Phyrdle dictionary
 
-The game accepts **11,736 guesses** and picks its target from the **1,500 most
+The game accepts **11,736 guesses** and picks its target from the **1,000 most
 frequent eligible five-letter words in the supplied English Wikipedia snapshot
 (April 13, 2023)**. Targets have five distinct letters for the physical tiles and exclude regular noun plurals.
 The previous target pool is replaced; Wikipedia frequencies now determine
@@ -8,7 +8,7 @@ which words can be targets.
 
 ## How targets are selected
 
-`build_answers.py` applies these rules before taking the top 1,500:
+`build_answers.py` applies these rules before taking the top 1,000:
 
 1. Exactly five lowercase letters, in the supplied SCOWL/ESDB size-60 US pool.
    This conservative dictionary filter reduces names, abbreviations, and raw
@@ -23,12 +23,11 @@ which words can be targets.
    `virus`, `bonus`, and `focus`, remain eligible as well.
 5. Sort by decreasing Wikipedia occurrence count, with alphabetical ties.
 
-There are 2,457 eligible candidates after filtering. The 1,500th target is
-`sager`, at 1,114 occurrences. The first ten are `first their after other would
-later world while about under`. The last ten are `civet gusty qubit dicky
-rives irate poked mulch flier sager`.
+There are 2,457 eligible candidates after filtering. The 1,000th target is
+`slump`, at 4,782 occurrences. The first ten are `first their after other would later world while about under`.
+The last ten are `bowel ethic glide cheat farce tonic rouse sadly cried slump`.
 
-These are the top 1,500 **after filtering**, not the first 1,500 raw Wikipedia
+These are the top 1,000 **after filtering**, not the first 1,000 raw Wikipedia
 tokens. Wikipedia frequency reflects encyclopedia writing, so some terms are
 still specialized. Other inflections, including past-tense and verb-only
 third-person forms, remain eligible. A frequency ranking does not guarantee
@@ -48,8 +47,8 @@ and variant keys, so American forms such as `molds` are linked to `mold`
 instead of the neighboring British `mould` entry. This avoids treating normal
 plurals as irregular because of a spelling variant. The current policy
 excludes 1,482 regular-plural word forms from target selection; all remain
-accepted guesses. It restores 47 targets compared with excluding every noun
-plural, and the frequency-ranked target pool stays at 1,500 words.
+accepted guesses. Irregular plurals remain eligible, and the frequency-ranked
+target pool contains 1,000 words.
 
 ## Reviewing and regenerating
 
@@ -80,7 +79,7 @@ make test-dictionary     # selection-policy tests + exhaustive native tests
 make compile             # complete Arduino Nano game at 8 MHz
 ```
 
-`ANSWER_COUNT` in `build_answers.py` controls the target count (currently 1,500).
+`ANSWER_COUNT` in `build_answers.py` controls the target count (currently 1,000).
 To exclude a target, edit the blocklist and run `make dictionary`. Commit
 `answers.txt`, `answer_ranking.tsv`, and `src/wordset/wordset_data.h` together.
 No downloads or sibling folders are needed to regenerate from the committed
