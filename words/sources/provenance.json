@@ -10,5 +10,12 @@
   "known_pool_sha256": "376b37f4700c53809bc496817541a6753fd1722ae61bb426f2deda9bab0b3337",
   "known_pool_rows": 5200,
   "known_pool_revision": "1e5b7d3 (2026-06-24)",
-  "blocklist_source": "Supplied WordSet lists/answer_blocklist.txt, adapted in that project from LDNOOBW and manual exclusions."
+  "blocklist_source": "Supplied WordSet lists/answer_blocklist.txt, adapted in that project from LDNOOBW and manual exclusions.",
+  "plural_source": "https://raw.githubusercontent.com/en-wl/wordlist/1e5b7d3a72f47a71da5d28686c1dd4b397178485/data/scowl-pre.txt",
+  "plural_source_revision": "1e5b7d3a72f47a71da5d28686c1dd4b397178485",
+  "plural_source_sha256": "a5fe3f11682a6ab9d31f2ea2a185833b1a01be7af83409c671bd0756a870f6c7",
+  "plural_subset_method": "Parse noun (<n>) source lines using the matching libscowl._core._matchLine, parseLemmaPart, and Line.procWords functions. Retain ns/nss forms occurring in known_pool.txt, at all ESDB sizes. Include same-spelling singular/plural forms and ambiguous homographs. Record source line and most recent explicit lemma in each blank-line-delimited group, falling back to the first explicit lemma if the plural precedes it. No suffix heuristic or verb-form filter is applied.",
+  "plural_subset_sha256": "eaa71e8baafa4d0104b03b5374942d5864680069d4494a4e34cd34ceb4d29168",
+  "plural_subset_rows": 1620,
+  "plural_subset_words": 1583
 }

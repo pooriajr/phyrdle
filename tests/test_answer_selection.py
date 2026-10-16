@@ -12,15 +12,24 @@ class AnswerSelectionTest(unittest.TestCase):
                        "ab1de": 700, "longer": 600, "crane": 10,
                        "flans": 10, "years": 5}
         known = {"apple", "their", "ab1de", "longer", "crane", "flans", "years"}
-        selected, available = rank_answers(frequencies, known, {"their"}, 2)
+        selected, available = rank_answers(frequencies, known, {"their"}, 2, plurals=set())
         self.assertEqual(selected, ["crane", "flans"])
         self.assertEqual(available, 3)
 
     def test_insufficient_pool_fails_instead_of_silently_shortening(self):
         with self.assertRaisesRegex(ValueError, "only 1 eligible"):
-            rank_answers({"crane": 10}, {"crane"}, set(), 2)
+            rank_answers({"crane": 10}, {"crane"}, set(), 2, plurals=set())
         with self.assertRaisesRegex(ValueError, "positive"):
-            rank_answers({"crane": 10}, {"crane"}, set(), 0)
+            rank_answers({"crane": 10}, {"crane"}, set(), 0, plurals=set())
+
+    def test_regular_and_irregular_plurals_are_excluded_before_backfilling(self):
+        plurals = {"years", "cries", "women", "fungi", "media", "jeans"}
+        frequencies = {word: 100 for word in plurals}
+        frequencies.update({"virus": 30, "bonus": 20, "focus": 10})
+        selected, available = rank_answers(
+            frequencies, set(frequencies), set(), 3, plurals=plurals)
+        self.assertEqual(selected, ["virus", "bonus", "focus"])
+        self.assertEqual(available, 3)
 
 
 if __name__ == "__main__":

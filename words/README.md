@@ -2,7 +2,7 @@
 
 The game accepts **11,736 guesses** and picks its target from the **1,500 most
 frequent eligible five-letter words in the supplied English Wikipedia snapshot
-(April 13, 2023)**. Targets have five distinct letters for the physical tiles.
+(April 13, 2023)**. Targets have five distinct letters for the physical tiles and exclude noun plurals.
 The previous target pool is replaced; Wikipedia frequencies now determine
 which words can be targets.
 
@@ -16,18 +16,32 @@ which words can be targets.
 2. Five distinct letters, so no target needs a duplicate physical tile.
 3. Exclude entries in `answer_blocklist.txt`, copied from the supplied project.
    Blocked targets can still be guesses.
-4. Sort by decreasing Wikipedia occurrence count, with alphabetical ties.
+4. Exclude words labelled as noun plurals (`ns`/`nss`) in the matching
+   ESDB revision. This catches regular forms such as `years` and `cries`,
+   irregular forms such as `women`, `fungi`, and `media`, and plural-only
+   words such as `jeans`. Singular words ending in S, including `virus`,
+   `bonus`, and `focus`, remain eligible.
+5. Sort by decreasing Wikipedia occurrence count, with alphabetical ties.
 
-There are 3,429 eligible candidates. The 1,500th target is `harms`, at 3,355
-occurrences. The first ten are `first their after other would years later world
-while about`. The last ten are `beryl craze quark gated nadir bulky oriel hinge
-evils harms`.
+There are 2,391 eligible candidates after filtering. The 1,500th target is
+`peony`, at 962 occurrences. The first ten are `first their after other would
+later world while about under`. The last ten are `poise swank wiper flaky
+hiker miser tromp anise bract peony`.
 
 These are the top 1,500 **after filtering**, not the first 1,500 raw Wikipedia
 tokens. Wikipedia frequency reflects encyclopedia writing, so some terms are
-still specialized. Plurals and inflected forms are allowed if eligible. A
-frequency ranking does not guarantee that every entry is a familiar puzzle
-answer.
+still specialized. Other inflections, including past-tense and verb-only
+third-person forms, remain eligible; the requested restriction is noun
+plurals. A frequency ranking does not guarantee a familiar puzzle answer.
+
+Plural classification uses all noun entries in the pinned ESDB source,
+including uncommon inflections, rather than a trailing-S heuristic. It is
+conservative: a word listed as a noun plural is excluded even if it also has
+a singular, verb, or other meaning (`corps`, `trout`, and `chaos`, for example).
+The labelled source snapshot contains 1,620 records for 1,583 five-letter
+words from the conservative pool. It excluded 402 of the previous 1,500
+targets; the next eligible words backfilled the pool to 1,500. All of these
+words remain accepted guesses.
 
 ## Reviewing and regenerating
 
@@ -44,8 +58,10 @@ answer.
 - `sources/enwiki-2023-04-13-conservative.tsv`: every Wikipedia frequency row
   matching that dictionary, before the distinct-letter or blocklist filters.
   All 5,151 matching rows are included; there is no frequency cutoff here.
+- `sources/plural_forms.tsv`: noun-plural labels with their lemma and line
+  number in the matching ESDB source, for reviewing the exclusions.
 - `sources/provenance.json`: source URLs, revisions, row counts, and SHA-256
-  hashes for the original 33 MB frequency file and committed snapshots.
+  hashes for the original frequency/inflection sources and committed snapshots.
 
 From the sketch directory:
 
@@ -62,6 +78,20 @@ To exclude a target, edit the blocklist and run `make dictionary`. Commit
 No downloads or sibling folders are needed to regenerate from the committed
 snapshots. Ordinary Arduino IDE and upload-script builds use the committed
 header and require neither Python nor a separate library installation.
+
+The plural snapshot can be rebuilt from a local ESDB checkout at revision
+`1e5b7d3a72f47a71da5d28686c1dd4b397178485`:
+
+```sh
+python3 words/import_plural_forms.py /path/to/wordlist
+make dictionary
+```
+
+The importer verifies the full source hash, uses the matching ESDB parser,
+and retains noun-plural entries matching the conservative dictionary. It
+records source line numbers, updates the snapshot hash, and needs no database
+build. Ordinary regeneration uses the committed snapshot and does not import
+or download ESDB code.
 
 The original `wordle_official_list.txt` remains historical source material;
 it no longer controls targets. The former `word_list.h`, duplicate
@@ -122,7 +152,9 @@ guesses; target exclusions are controlled separately by the blocklist.
 The old validator accepted any five-character string ending in `S`, including
 `ZZZZS`; this integration replaces that shortcut with dictionary membership.
 
-Tests verify filter-before-ranking behavior, alphabetical frequency ties,
+Tests verify regular/irregular plural exclusion, preservation of singular
+S-ending targets, continued plural guess acceptance, filter-before-ranking
+behavior, alphabetical frequency ties,
 insufficient candidate handling, current source hashes, and exact agreement
 between generated targets and encoded data. The original 33 MB Wikipedia
 file was also checked independently against the final ranked selection.
@@ -148,7 +180,9 @@ No firmware was uploaded; physical-device responsiveness has not been tested.
 `NOTICE.txt` preserves the supplied ESDB/UK Advanced Cryptics Dictionary
 notices and adds the Wikipedia word-frequency project's MIT notice and
 LDNOOBW attribution for the supplied answer blocklist. Source URLs and
-snapshot hashes are in `sources/provenance.json`.
+snapshot hashes are in `sources/provenance.json`. The plural labels come
+from the same ESDB revision as the dictionary exports and are covered by the
+preserved ESDB data notice.
 
 The supplied WordSet project has no standalone code LICENSE file. Its
 metadata names its author but does not specify a code licence; a

@@ -90,3 +90,12 @@ https://creativecommons.org/licenses/by/4.0/
 The supplied WordSet project adapted that list into an answer-only blocklist;
 this project keeps those exclusions and updates the build instructions in
 its comments. Blocked words remain guesses.
+
+Plural inflection snapshot
+--------------------------
+Additional noun-inflection labels are derived from ESDB data/scowl-pre.txt
+at the same revision as the dictionary exports:
+https://github.com/en-wl/wordlist/tree/1e5b7d3a72f47a71da5d28686c1dd4b397178485
+The ESDB copyright and permission notice above applies. The retained subset
+is restricted to known_pool.txt words and records the source line and lemma.
+See sources/provenance.json for source and subset checksums.

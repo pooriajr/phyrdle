@@ -38,6 +38,15 @@ int main() {
   check(WordSet::guessCount() == guesses.size(), "guessCount");
   check(WordSet::answerCount() == answers.size(), "answerCount");
 
+  // Target filtering must never narrow the accepted-guess dictionary.
+  for (const char *plural : {"years", "books", "cries", "wives", "women",
+                             "fungi", "media", "jeans", "pants"}) {
+    check(WordSet::isValidGuess(plural), "plural was removed from guesses");
+    check(!WordSet::isAnswer(plural), "plural is still a target");
+  }
+  for (const char *singular : {"virus", "bonus", "focus"})
+    check(WordSet::isAnswer(singular), "singular ending in S was incorrectly filtered");
+
   // Exercise the actual game adapter as well as the compressed decoder.
   Dictionary dictionary;
   for (const auto &word : guesses) {
