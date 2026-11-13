@@ -1,4 +1,4 @@
-.PHONY: compile upload dictionary dictionary-check test-dictionary
+.PHONY: compile upload dictionary dictionary-check test-dictionary test-light-feedback
 .DEFAULT_GOAL := compile
 
 FQBN := arduino:avr:nano
@@ -18,6 +18,13 @@ test-dictionary: dictionary-check
 	trap 'rm -f "$$test_binary"' EXIT; \
 	$(TEST_CXX) -O2 -std=c++17 -Wall -Wextra -pedantic -Itests/arduino_stub \
 		tests/dictionary_test.cpp src/wordset/WordSet.cpp -o "$$test_binary"; \
+	"$$test_binary"
+
+test-light-feedback:
+	@set -e; test_binary=$$(mktemp /tmp/tactle-light-feedback.XXXXXX); \
+	trap 'rm -f "$$test_binary"' EXIT; \
+	$(TEST_CXX) -std=c++11 -Wall -Wextra -Werror -pedantic \
+		tests/light_feedback_test.cpp -o "$$test_binary"; \
 	"$$test_binary"
 
 compile:

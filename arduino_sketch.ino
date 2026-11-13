@@ -34,7 +34,7 @@ void initClockPrescaler() {
 #include <FastLED.h>
 
 #define CHECK_INTERVAL 5 // milliseconds between input scans
-#define WIN_ANIMATION_INTERVAL 100 // preserve the current rainbow speed
+#define WIN_ANIMATION_INTERVAL 5 // Keep the rainbow entry sweep responsive
 #define SLOT_COUNT 5
 #define WIN_TIMEOUT 8000  // 8 seconds in milliseconds
 #define LOG_INTERVAL 1000 // 1 second in milliseconds
@@ -284,7 +284,7 @@ void loop() {
   // If game is won, update with rainbow animation and skip the rest of the loop
   if (gameWon) {
     // Use the rainbow animation instead of the regular LED update
-    updateRainbowAnimation();
+    updateRainbowAnimation(currentTime, winTimestamp);
     delay(WIN_ANIMATION_INTERVAL);
     return;
   }
@@ -339,8 +339,23 @@ void check_word() {
   // Create a Result object to evaluate the word against the target
   Result result(&currentWord, targetWord, slots);
 
-  // Light up the board based on the evaluation
-  board.light(slots, SLOT_COUNT);
+  // Start the winning rainbow immediately, bypassing the normal result reveal.
+  bool allWin = true;
+  for (int i = 0; i < SLOT_COUNT; i++) {
+    if (slots[i].state != WIN) {
+      allWin = false;
+      break;
+    }
+  }
+  if (allWin) {
+    gameWon = true;
+    winTimestamp = millis();
+    gHue = 0;
+    lastRainbowFrameAt = winTimestamp;
+    updateRainbowAnimation(winTimestamp, winTimestamp);
+  } else {
+    board.light(slots, SLOT_COUNT);
+  }
 
   String currentWordText = currentWord.getWord();
 
@@ -367,22 +382,9 @@ void check_word() {
     lastReportedWord = currentWordText;
   }
 
-  // Check if the game has been won
-  bool allWin = true;
-  for (int i = 0; i < SLOT_COUNT; i++) {
-    if (slots[i].state != WIN) {
-      allWin = false;
-      break;
-    }
-  }
-
-  // If all slots are in WIN state, set the game to won and record the timestamp
   if (allWin) {
-    gameWon = true;
-    winTimestamp = millis();
-
     // Always log win messages
-    Serial.println("Game won! Resetting in 3 seconds...");
+    Serial.println("Game won! Resetting in 8 seconds...");
   }
 }
 
@@ -390,12 +392,13 @@ void check_word() {
 void resetGame() {
   // Reset game state
   gameWon = false;
+  lightFeedback.reset();
 
   // Reset logging timestamp
   lastLogTimestamp = millis();
 
   // Reset LED brightness back to normal
-  FastLED.setBrightness(50);
+  FastLED.setBrightness(NORMAL_BRIGHTNESS);
 
   // Pick a new target word. The RNG is seeded once in setup().
   targetWord = dictionary.randomWord();

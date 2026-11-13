@@ -1,39 +1,49 @@
-import sys
 import csv
+import sys
 from pathlib import Path
 import unittest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "words"))
-from build_answers import rank_answers, regular_plural_exclusions
+from build_answers import select_curated_answers, regular_plural_exclusions
 
 
 class AnswerSelectionTest(unittest.TestCase):
-    def test_filter_before_ranking_and_resolve_ties_alphabetically(self):
-        frequencies = {"apple": 1000, "their": 900, "james": 800,
-                       "ab1de": 700, "longer": 600, "crane": 10,
-                       "flans": 10, "years": 5}
-        known = {"apple", "their", "ab1de", "longer", "crane", "flans", "years"}
-        selected, available = rank_answers(frequencies, known, {"their"}, 2, excluded_plurals=set())
-        self.assertEqual(selected, ["crane", "flans"])
-        self.assertEqual(available, 3)
+    def test_approval_controls_membership_instead_of_frequency_or_auto_backfill(self):
+        approved = ["crane", "spork"]
+        selected = select_curated_answers(
+            approved, {"crane", "spork", "synod"}, set(), 2,
+            excluded_plurals=set(), frequencies={"synod": 100000, "crane": 10})
+        self.assertEqual(selected, ["crane", "spork"])
+        with self.assertRaisesRegex(ValueError, "review replacements explicitly"):
+            select_curated_answers(
+                ["crane"], {"crane", "spork", "synod"}, set(), 2,
+                excluded_plurals=set(), frequencies={"synod": 100000})
 
-    def test_insufficient_pool_fails_instead_of_silently_shortening(self):
-        with self.assertRaisesRegex(ValueError, "only 1 eligible"):
-            rank_answers({"crane": 10}, {"crane"}, set(), 2, excluded_plurals=set())
-        with self.assertRaisesRegex(ValueError, "positive"):
-            rank_answers({"crane": 10}, {"crane"}, set(), 0, excluded_plurals=set())
+    def test_invalid_or_unreviewed_target_manifest_is_rejected(self):
+        cases = [(["crane", "crane"], "unique"),
+                 (["spork", "crane"], "alphabetical"),
+                 (["apple"], "distinct"), (["CRANE"], "lowercase"),
+                 (["crane"], "explicitly excluded"),
+                 (["years"], "plurals"), (["spork"], "guesses")]
+        for approved, message in cases:
+            with self.subTest(approved=approved, message=message):
+                with self.assertRaisesRegex(ValueError, message):
+                    select_curated_answers(
+                        approved, {"crane", "apple", "CRANE", "years"},
+                        {"crane"} if message == "explicitly excluded" else set(),
+                        len(approved), excluded_plurals={"years"}, frequencies={})
 
-    def test_regular_plurals_are_excluded_but_irregular_plurals_can_rank(self):
+    def test_regular_plurals_are_excluded_but_irregular_plurals_can_be_approved(self):
         forms = [("years", "year"), ("cries", "cry"), ("boxes", "box"),
                  ("women", "woman"), ("fungi", "fungus"), ("media", "medium"),
                  ("jeans", "jean"), ("wives", "wife")]
-        frequencies = {word: 100 for word, _ in forms}
-        frequencies.update({"virus": 30, "bonus": 20, "focus": 10})
-        selected, available = rank_answers(
-            frequencies, set(frequencies), set(), 7,
-            excluded_plurals=regular_plural_exclusions(forms))
-        self.assertEqual(selected, ["fungi", "media", "wives", "women", "virus", "bonus", "focus"])
-        self.assertEqual(available, 7)
+        excluded = regular_plural_exclusions(forms)
+        self.assertEqual(excluded, {"years", "cries", "boxes", "jeans"})
+        approved = sorted(["fungi", "media", "wives", "women", "virus", "bonus", "focus"])
+        selected = select_curated_answers(
+            approved, set(approved), set(), len(approved),
+            excluded_plurals=excluded, frequencies={})
+        self.assertEqual(selected, approved)
 
     def test_irregular_sense_and_unchanged_plural_remain_eligible(self):
         self.assertEqual(regular_plural_exclusions([
@@ -47,8 +57,6 @@ class AnswerSelectionTest(unittest.TestCase):
             forms = [(row["word"], row["lemma"])
                      for row in csv.DictReader(stream, delimiter="\t")]
         excluded = regular_plural_exclusions(forms)
-        # The import must match ESDB spelling keys: e.g. molds belongs to
-        # mold, not the neighboring British variant mould in the same group.
         for pair in [("grams", "gram"), ("grays", "gray"), ("jails", "jail"),
                      ("loves", "love"), ("molds", "mold")]:
             self.assertIn(pair, forms)

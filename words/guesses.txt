@@ -4129,6 +4129,7 @@ gorsy
 gosht
 goths
 gotta
+gouda
 gouge
 goura
 gourd
@@ -9593,6 +9594,7 @@ spoon
 spoor
 spoot
 spore
+spork
 sport
 sposh
 spots
@@ -9922,6 +9924,7 @@ swith
 swive
 swizz
 swobs
+swole
 swonk
 swoon
 swoop

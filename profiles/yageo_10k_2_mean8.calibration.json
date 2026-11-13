@@ -1,0 +1,243 @@
+{
+  "profile": "/Users/pooria/Projects/Tactle/Arduino/arduino_sketch/profiles/yageo_10k_2.h",
+  "profile_sha256": "e8d7cbaa1c710be1ff4ad7a23a3f5fc0ed7a9a4bb372c4039af77fe24d5beb2a",
+  "filter": "mean8",
+  "letters": {
+    "Y": {
+      "lo": 996,
+      "hi": 1003,
+      "windows": 78,
+      "slots": [
+        1
+      ],
+      "verified": true
+    },
+    "X": {
+      "lo": 979,
+      "hi": 986,
+      "windows": 79,
+      "slots": [
+        2
+      ],
+      "verified": true
+    },
+    "Z": {
+      "lo": 1015,
+      "hi": 1023,
+      "windows": 81,
+      "slots": [
+        3
+      ],
+      "verified": false
+    },
+    "A": {
+      "lo": 407,
+      "hi": 411,
+      "windows": 63,
+      "slots": [
+        4
+      ],
+      "verified": false
+    },
+    "B": {
+      "lo": 89,
+      "hi": 90,
+      "windows": 60,
+      "slots": [
+        5
+      ],
+      "verified": false
+    },
+    "K": {
+      "lo": 7,
+      "hi": 7,
+      "windows": 15,
+      "slots": [
+        1
+      ],
+      "verified": false
+    },
+    "C": {
+      "lo": 681,
+      "hi": 685,
+      "windows": 14,
+      "slots": [
+        2
+      ],
+      "verified": false
+    },
+    "W": {
+      "lo": 896,
+      "hi": 901,
+      "windows": 14,
+      "slots": [
+        3
+      ],
+      "verified": false
+    },
+    "U": {
+      "lo": 774,
+      "hi": 779,
+      "windows": 10,
+      "slots": [
+        5
+      ],
+      "verified": false
+    },
+    "I": {
+      "lo": 963,
+      "hi": 970,
+      "windows": 10,
+      "slots": [
+        4
+      ],
+      "verified": true
+    },
+    "E": {
+      "lo": 274,
+      "hi": 275,
+      "windows": 7,
+      "slots": [
+        1
+      ],
+      "verified": false
+    },
+    "T": {
+      "lo": 718,
+      "hi": 722,
+      "windows": 10,
+      "slots": [
+        2
+      ],
+      "verified": false
+    },
+    "Q": {
+      "lo": 462,
+      "hi": 464,
+      "windows": 11,
+      "slots": [
+        3
+      ],
+      "verified": false
+    },
+    "G": {
+      "lo": 43,
+      "hi": 44,
+      "windows": 14,
+      "slots": [
+        4
+      ],
+      "verified": false
+    },
+    "N": {
+      "lo": 189,
+      "hi": 191,
+      "windows": 14,
+      "slots": [
+        5
+      ],
+      "verified": false
+    },
+    "H": {
+      "lo": 508,
+      "hi": 513,
+      "windows": 11,
+      "slots": [
+        1
+      ],
+      "verified": false
+    },
+    "P": {
+      "lo": 338,
+      "hi": 340,
+      "windows": 8,
+      "slots": [
+        2
+      ],
+      "verified": false
+    },
+    "J": {
+      "lo": 935,
+      "hi": 941,
+      "windows": 8,
+      "slots": [
+        3
+      ],
+      "verified": false
+    },
+    "M": {
+      "lo": 128,
+      "hi": 131,
+      "windows": 7,
+      "slots": [
+        4
+      ],
+      "verified": false
+    },
+    "L": {
+      "lo": 25,
+      "hi": 25,
+      "windows": 7,
+      "slots": [
+        5
+      ],
+      "verified": false
+    },
+    "S": {
+      "lo": 614,
+      "hi": 617,
+      "windows": 10,
+      "slots": [
+        1
+      ],
+      "verified": false
+    },
+    "D": {
+      "lo": 810,
+      "hi": 816,
+      "windows": 17,
+      "slots": [
+        2
+      ],
+      "verified": false
+    },
+    "V": {
+      "lo": 858,
+      "hi": 863,
+      "windows": 13,
+      "slots": [
+        3
+      ],
+      "verified": false
+    },
+    "R": {
+      "lo": 568,
+      "hi": 571,
+      "windows": 8,
+      "slots": [
+        4
+      ],
+      "verified": false
+    },
+    "F": {
+      "lo": 59,
+      "hi": 62,
+      "windows": 8,
+      "slots": [
+        5
+      ],
+      "verified": false
+    },
+    "O": {
+      "lo": 234,
+      "hi": 237,
+      "windows": 5,
+      "slots": [
+        1,
+        3
+      ],
+      "verified": false
+    }
+  },
+  "excluded_empty_measurements": {}
+}

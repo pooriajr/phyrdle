@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Select target words using the committed Wikipedia-frequency snapshot."""
+"""Validate the explicit curated target list and generate its game files."""
 import argparse
+import csv
 import hashlib
 import json
 from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parent
-ANSWER_COUNT = 1000
+ANSWER_COUNT = 2000
 WORD = re.compile(r"[a-z]{5}")
 
 
@@ -26,64 +27,75 @@ def regular_plural_exclusions(forms):
     return regular - irregular
 
 
-def rank_answers(frequencies, known_words, blocked, count, *, excluded_plurals):
-    """Filter first, then rank by descending frequency with alphabetical ties."""
+def select_curated_answers(approved, guesses, blocked, count, *, excluded_plurals, frequencies):
+    """Approval determines membership; frequency only orders the review report."""
     if count <= 0:
         raise ValueError("answer count must be positive")
-    eligible = [word for word in frequencies
-                if WORD.fullmatch(word) and len(set(word)) == 5
-                and word in known_words and word not in blocked
-                and word not in excluded_plurals
-                and frequencies[word] > 0]
-    ranked = sorted(eligible, key=lambda word: (-frequencies[word], word))
-    if len(ranked) < count:
-        raise ValueError(f"only {len(ranked)} eligible words; cannot select {count}")
-    return ranked[:count], len(ranked)
+    if len(approved) != len(set(approved)):
+        raise ValueError("curated targets must be unique")
+    if len(approved) != count:
+        raise ValueError(f"expected exactly {count} curated targets, got {len(approved)}; "
+                         "review replacements explicitly instead of automatic backfilling")
+    if approved != sorted(approved):
+        raise ValueError("curated targets must be alphabetical")
+    for word in approved:
+        if not WORD.fullmatch(word) or len(set(word)) != 5:
+            raise ValueError(f"{word}: targets require five distinct lowercase letters")
+        if word not in guesses:
+            raise ValueError(f"{word}: curated target must also be in guesses.txt")
+        if word in blocked:
+            raise ValueError(f"{word}: target was explicitly excluded by curation or the blocklist")
+        if word in excluded_plurals:
+            raise ValueError(f"{word}: regular noun plurals are guesses only")
+    return sorted(approved, key=lambda word: (-frequencies.get(word, 0), word))
 
 
 def build_answers(check=False):
     source = ROOT / "sources"
     metadata = json.loads((source / "provenance.json").read_text())
-    # Catch truncated or accidentally edited source snapshots, rather than
-    # silently changing which words are considered most frequent.
     for filename, key in [("known_pool.txt", "known_pool_sha256"),
-                          ("enwiki-2023-04-13-conservative.tsv", "frequency_subset_sha256"),
+                          (metadata["frequency_subset_file"], "frequency_subset_sha256"),
                           ("plural_forms.tsv", "plural_subset_sha256")]:
         actual = hashlib.sha256((source / filename).read_bytes()).hexdigest()
         if actual != metadata[key]:
             raise ValueError(f"{filename}: source checksum does not match provenance.json")
     known = set((source / "known_pool.txt").read_text().splitlines())
+    guesses = set((ROOT / "guesses.txt").read_text().splitlines())
     frequencies = {}
-    for line in (source / "enwiki-2023-04-13-conservative.tsv").read_text().splitlines():
+    for line in (source / metadata["frequency_subset_file"]).read_text().splitlines():
         word, count = line.split("\t")
-        if not WORD.fullmatch(word) or word not in known or word in frequencies:
+        if not WORD.fullmatch(word) or word not in guesses or word in frequencies or int(count) <= 0:
             raise ValueError(f"invalid or duplicate frequency row: {line}")
         frequencies[word] = int(count)
     if len(known) != metadata["known_pool_rows"] or len(frequencies) != metadata["frequency_subset_rows"]:
         raise ValueError("source row counts do not match provenance.json")
-    plural_rows = (source / "plural_forms.tsv").read_text().splitlines()
-    if plural_rows[0] != "word\tlemma\tpos\tsource_line":
-        raise ValueError("invalid plural source header")
-    plurals = set()
-    plural_forms = []
-    for row in plural_rows[1:]:
-        word, lemma, pos, source_line = row.split("\t")
-        if word not in known or not lemma or pos not in {"ns", "nss"} or int(source_line) < 1:
+    with (source / "plural_forms.tsv").open() as stream:
+        reader = csv.DictReader(stream, delimiter="\t")
+        if reader.fieldnames != ["word", "lemma", "pos", "source_line"]:
+            raise ValueError("invalid plural source header")
+        rows = list(reader)
+    forms = []
+    candidate_pool = guesses | known
+    for row in rows:
+        if (row["word"] not in candidate_pool or not row["lemma"]
+                or row["pos"] not in {"ns", "nss"} or int(row["source_line"]) < 1):
             raise ValueError(f"invalid plural row: {row}")
-        plurals.add(word)
-        plural_forms.append((word, lemma))
-    if (len(plural_rows) - 1 != metadata["plural_subset_rows"]
-            or len(plurals) != metadata["plural_subset_words"]):
+        forms.append((row["word"], row["lemma"]))
+    if (len(rows) != metadata["plural_subset_rows"]
+            or len({word for word, _ in forms}) != metadata["plural_subset_words"]):
         raise ValueError("plural source counts do not match provenance.json")
     blocked = {line.split("#", 1)[0].strip()
                for line in (ROOT / "answer_blocklist.txt").read_text().splitlines()}
-    ranked, available = rank_answers(
-        frequencies, known, blocked, ANSWER_COUNT,
-        excluded_plurals=regular_plural_exclusions(plural_forms))
+    with (ROOT / "curation_exclusions.tsv").open() as stream:
+        blocked.update(row["word"] for row in csv.DictReader(stream, delimiter="\t"))
+    approved = (ROOT / "curated_targets.txt").read_text().splitlines()
+    ranked = select_curated_answers(
+        approved, guesses, blocked, ANSWER_COUNT,
+        excluded_plurals=regular_plural_exclusions(forms), frequencies=frequencies)
     outputs = {
         "answers.txt": "".join(word + "\n" for word in sorted(ranked)),
         "answer_ranking.tsv": "rank\tword\twikipedia_occurrences\n" + "".join(
-            f"{rank}\t{word}\t{frequencies[word]}\n"
+            f"{rank}\t{word}\t{frequencies.get(word, 'NA')}\n"
             for rank, word in enumerate(ranked, 1)),
     }
     for filename, content in outputs.items():
@@ -93,8 +105,9 @@ def build_answers(check=False):
                 raise ValueError(f"{filename} is stale; run make dictionary")
         else:
             target.write_text(content)
-    print(f"Wikipedia targets: {len(ranked):,} of {available:,} eligible; "
-          f"cutoff {frequencies[ranked[-1]]:,} occurrences ({ranked[-1]})")
+    print(f"Curated targets: {len(ranked):,}; "
+          f"{sum(word not in frequencies for word in ranked)} without a Wikipedia count. "
+          "No automatic backfill.")
     return ranked
 
 

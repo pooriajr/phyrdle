@@ -95,6 +95,8 @@ void loop() {
   if (now - diagLastScan < 5) return;
   diagLastScan = now;
   for (uint8_t slot = 0; slot < 5; ++slot) {
+    // Match the game: discard the first conversion after switching inputs.
+    (void)analogRead(DIAG_PINS[slot]);
     const uint16_t raw = analogRead(DIAG_PINS[slot]);
     const bool occupied = raw > EMPTY_SLOT_MAX_ADC;
     const uint16_t value = diagAverages[slot].update(raw, now, EMPTY_SLOT_MAX_ADC);

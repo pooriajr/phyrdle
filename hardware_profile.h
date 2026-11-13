@@ -8,6 +8,7 @@
 #define PHYRDLE_PROFILE_LEGACY_1K 1
 #define PHYRDLE_PROFILE_WIDE_4K7 2
 #define PHYRDLE_PROFILE_YAGEO_10K 3
+#define PHYRDLE_PROFILE_ECO_10K 4
 
 // ---------------------------------------------------------------------------
 // Active hardware profile -- change this one line in the Arduino IDE.
@@ -33,6 +34,8 @@ struct LetterAdcRange {
 #include "profiles/wide_4k7.h"
 #elif PHYRDLE_HARDWARE_PROFILE == PHYRDLE_PROFILE_YAGEO_10K
 #include "profiles/yageo_10k.h"
+#elif PHYRDLE_HARDWARE_PROFILE == PHYRDLE_PROFILE_ECO_10K
+#include "profiles/eco_10k.h"
 #else
 #error "Unknown PHYRDLE_HARDWARE_PROFILE selection"
 #endif

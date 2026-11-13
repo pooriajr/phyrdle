@@ -8,7 +8,7 @@ const int WORD_LENGTH = 5;
 
 class Dictionary {
  public:
-  // Targets come from the Wikipedia-ranked, distinct-letter pool. RNG is seeded in setup().
+  // Targets come from the reviewed, distinct-letter pool. RNG is seeded in setup().
   String randomWord() {
     return getWordAt(random(WordSet::answerCount()));
   }

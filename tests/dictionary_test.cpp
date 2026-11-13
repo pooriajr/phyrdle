@@ -50,6 +50,16 @@ int main() {
   for (const char *singular : {"virus", "bonus", "focus"})
     check(WordSet::isAnswer(singular), "singular ending in S was incorrectly filtered");
 
+  for (const char *word : {"begum", "lough", "laird", "synod", "sahib", "septa",
+                            "taxon", "sager", "rives", "copra", "ketch", "quint", "cloys", "trued"}) {
+    check(WordSet::isValidGuess(word), "curation narrowed the broad guess dictionary");
+    check(!WordSet::isAnswer(word), "explicitly rejected obscure word became a target");
+  }
+  for (const char *word : {"spork", "swole", "gouda", "mochi", "towel", "unbox"}) {
+    check(WordSet::isValidGuess(word), "new curated word is not a legal guess");
+    check(WordSet::isAnswer(word), "curated approval is missing from encoded targets");
+  }
+
   // Exercise the actual game adapter as well as the compressed decoder.
   Dictionary dictionary;
   for (const auto &word : guesses) {
@@ -69,8 +79,8 @@ int main() {
       check(letter >= 'A' && letter <= 'Z', "target must remain uppercase");
       letter += 'a' - 'A';
     }
-    check(lower == answers[i], "adapter changed Wikipedia target selection");
-    check(dictionary.isValid(target), "Wikipedia target is not an accepted guess");
+    check(lower == answers[i], "adapter changed curated target selection");
+    check(dictionary.isValid(target), "curated target is not an accepted guess");
     check(std::set<char>(lower.begin(), lower.end()).size() == 5, "target repeats a tile");
   }
   check(dictionary.getWordAt(-1).length() == 0, "negative answer index accepted");
@@ -79,7 +89,7 @@ int main() {
     const String target = dictionary.randomWord();
     std::string lower = target.c_str();
     for (char &letter : lower) letter += 'a' - 'A';
-    check(aset.count(lower) != 0, "random target outside Wikipedia pool");
+    check(aset.count(lower) != 0, "random target outside curated pool");
   }
   std::printf("0. game adapter accepts both cases, rejects invalid plurals, preserves every target\n");
 

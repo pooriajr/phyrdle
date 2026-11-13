@@ -3,9 +3,9 @@
   "frequency_download": "https://raw.githubusercontent.com/IlyaSemenov/wikipedia-word-frequency/master/results/enwiki-2023-04-13.txt",
   "frequency_snapshot": "2023-04-13",
   "frequency_source_sha256": "e2071140a49a6c40c732bd68c36836ef13c0978233fb3d5e1b2a3c2d34faef59",
-  "subset_method": "Retain every source row whose word occurs in known_pool.txt; keep its original count. No rank cutoff, repeat-letter filter, or blocklist is applied to this source snapshot.",
-  "frequency_subset_sha256": "6dcd8903f9a016b65573a65e32de194889a71a68ab4cbe57f31fb63d1473569e",
-  "frequency_subset_rows": 5151,
+  "subset_method": "Retain every original Wikipedia row matching guesses.txt. Keep the original occurrence count, with no frequency cutoff. Missing words have no recorded Wikipedia count and can still be curated targets.",
+  "frequency_subset_sha256": "c0863c076ddeedfba9f2dd98f2bedb4f1fd086168b6e1e5907e605fabd4be942",
+  "frequency_subset_rows": 10402,
   "known_pool_source": "Supplied WordSet data/known_pool.txt; lowercase five-letter entries from the included SCOWL/ESDB size-60 US export.",
   "known_pool_sha256": "376b37f4700c53809bc496817541a6753fd1722ae61bb426f2deda9bab0b3337",
   "known_pool_rows": 5200,
@@ -14,8 +14,15 @@
   "plural_source": "https://raw.githubusercontent.com/en-wl/wordlist/1e5b7d3a72f47a71da5d28686c1dd4b397178485/data/scowl-pre.txt",
   "plural_source_revision": "1e5b7d3a72f47a71da5d28686c1dd4b397178485",
   "plural_source_sha256": "a5fe3f11682a6ab9d31f2ea2a185833b1a01be7af83409c671bd0756a870f6c7",
-  "plural_subset_method": "Parse noun (<n>) source lines using the matching libscowl._core._matchLine, parseLemmaPart, and Line.procWords functions. Retain ns/nss forms occurring in known_pool.txt, at all ESDB sizes. Include same-spelling singular/plural forms and ambiguous homographs. Match each plural to the explicit lemma with the same Spellings.key() and variant number within its blank-line-delimited group, regardless of row order. Record source line and lemma. The complete plural snapshot is independent of target-selection policy.",
-  "plural_subset_sha256": "b75bc289283b41417718c8b981f58fbfd759d0dc72e7ad3406956e8d1ad3e280",
-  "plural_subset_rows": 1620,
-  "plural_subset_words": 1583
+  "plural_subset_method": "Parse noun (<n>) source lines with the matching ESDB parser. Retain ns/nss forms in the union of sources/known_pool.txt and guesses.txt, at all ESDB sizes. Match plural and lemma by Spellings.key() and variant number within each blank-line-delimited group, regardless of row order. Record source line and lemma. The snapshot is independent of target-selection policy.",
+  "plural_subset_sha256": "752c29255927cf5097a93a825dcaa971756e9d932cc71c517010b961d9732db4",
+  "plural_subset_rows": 3132,
+  "plural_subset_words": 3086,
+  "frequency_subset_file": "enwiki-2023-04-13-guesses.tsv",
+  "curation_method": "Explicit assistant familiarity review of distinct-letter candidates from the conservative and broad supplied dictionaries. An alphabetical approval manifest determines all 2,000 targets; Wikipedia frequency only orders the optional review report. Exclusions are recorded separately. No recognition survey or numerical familiarity score is claimed.",
+  "additional_guess_sources": {
+    "spork": "https://www.merriam-webster.com/dictionary/spork",
+    "swole": "https://www.merriam-webster.com/dictionary/swole",
+    "gouda": "https://www.merriam-webster.com/dictionary/Gouda"
+  }
 }

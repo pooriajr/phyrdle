@@ -2,7 +2,7 @@
 //
 // Two sets live in one structure:
 //   * the GUESS set, every 5-letter word accepted as a legal guess;
-//   * the ANSWER set, the Wikipedia-ranked Phyrdle target words to pick from.
+//   * the ANSWER set, the curated Phyrdle target words to pick from.
 //
 // Answers cost one bit per guess word on top of the guess set: an answer is
 // just a guess word that is flagged. Letters are never stored twice.

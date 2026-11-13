@@ -21,7 +21,8 @@ def main():
         parser.error("ESDB source does not match the pinned source hash")
     sys.path.insert(0, str(args.esdb_root.resolve()))
     core = importlib.import_module("libscowl._core")
-    known = set((ROOT / "sources/known_pool.txt").read_text().splitlines())
+    known = (set((ROOT / "sources/known_pool.txt").read_text().splitlines())
+             | set((ROOT / "guesses.txt").read_text().splitlines()))
     records = set()
     # Some groups put their plural row before the lemma; collect the entire
     # group first so every snapshot row has an explicit lemma for review.

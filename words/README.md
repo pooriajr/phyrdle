@@ -1,92 +1,70 @@
 # Phyrdle dictionary
 
-The game accepts **11,736 guesses** and picks its target from the **1,000 most
-frequent eligible five-letter words in the supplied English Wikipedia snapshot
-(April 13, 2023)**. Targets have five distinct letters for the physical tiles and exclude regular noun plurals.
-The previous target pool is replaced; Wikipedia frequencies now determine
-which words can be targets.
+The game accepts **11,739 guesses** and draws targets from **2,000 explicitly
+curated words**. All targets have five distinct letters for the physical tiles.
+Regular noun plurals are guesses only; familiar irregular plurals are allowed.
 
-## How targets are selected
+Start with [the full target list](curated_targets.txt) and
+[the curation report](CURATION.md). Target membership is determined by that
+approval list. Wikipedia frequency is only an optional review aid.
 
-`build_answers.py` applies these rules before taking the top 1,000:
+## Editing and regeneration
 
-1. Exactly five lowercase letters, in the supplied SCOWL/ESDB size-60 US pool.
-   This conservative dictionary filter reduces names, abbreviations, and raw
-   Wikipedia token noise; it is not a manual review of every word.
-2. Five distinct letters, so no target needs a duplicate physical tile.
-3. Exclude entries in `answer_blocklist.txt`, copied from the supplied project.
-   Blocked targets can still be guesses.
-4. From the recorded ESDB noun-plural forms (`ns`/`nss`), exclude ordinary
-   `-s`, `-es`, and consonant-`y` to `-ies` plurals, such as `years`, `boxes`,
-   `cries`, and `jeans`. Irregular plurals such as `fungi`, `women`, `media`,
-   `wives`, and `lives` remain eligible. Singular words ending in S, including
-   `virus`, `bonus`, and `focus`, remain eligible as well.
-5. Sort by decreasing Wikipedia occurrence count, with alphabetical ties.
-
-There are 2,457 eligible candidates after filtering. The 1,000th target is
-`slump`, at 4,782 occurrences. The first ten are `first their after other would later world while about under`.
-The last ten are `bowel ethic glide cheat farce tonic rouse sadly cried slump`.
-
-These are the top 1,000 **after filtering**, not the first 1,000 raw Wikipedia
-tokens. Wikipedia frequency reflects encyclopedia writing, so some terms are
-still specialized. Other inflections, including past-tense and verb-only
-third-person forms, remain eligible. A frequency ranking does not guarantee
-a familiar puzzle answer.
-
-Plural classification starts with actual noun inflections from the pinned
-ESDB source, rather than rejecting every word ending in S. The source
-snapshot contains 1,620 records for 1,583 words from the conservative pool.
-A form is considered regular if it matches its recorded lemma plus `s`,
-plus `es`, or a consonant-`y` to `ies` change. Other recorded forms, including
-`wife` to `wives` and unchanged singular/plural spellings such as `corps`,
-are treated as irregular. When a word has both regular and irregular noun
-readings, the irregular reading keeps it eligible.
-
-The source records match plural forms to singular lemmas by ESDB spelling
-and variant keys, so American forms such as `molds` are linked to `mold`
-instead of the neighboring British `mould` entry. This avoids treating normal
-plurals as irregular because of a spelling variant. The current policy
-excludes 1,482 regular-plural word forms from target selection; all remain
-accepted guesses. Irregular plurals remain eligible, and the frequency-ranked
-target pool contains 1,000 words.
-
-## Reviewing and regenerating
-
-- `answer_ranking.tsv`: all selected targets, in frequency order, with their
-  rank and exact occurrence count. Use this to review the cutoff.
-- `answers.txt`: the same selected targets alphabetically, for the encoder.
-  This file is generated; do not edit it directly.
-- `answer_blocklist.txt`: editable answer exclusions; selection backfills from
-  the next eligible words when exclusions change.
-- `guesses.txt`: the broad guess dictionary, including regional spellings,
-  repeated-letter words, and obscure entries. It retains all 11,736 words
-  accepted by the initial integration, even when they are no longer targets.
-- `sources/known_pool.txt`: the supplied 5,200-word conservative dictionary.
-- `sources/enwiki-2023-04-13-conservative.tsv`: every Wikipedia frequency row
-  matching that dictionary, before the distinct-letter or blocklist filters.
-  All 5,151 matching rows are included; there is no frequency cutoff here.
-- `sources/plural_forms.tsv`: noun-plural labels with their lemma and line
-  number in the matching ESDB source, for reviewing the exclusions.
-- `sources/provenance.json`: source URLs, revisions, row counts, and SHA-256
-  hashes for the original frequency/inflection sources and committed snapshots.
+- `curated_targets.txt`: the authoritative, reviewed pool. Exactly 2,000 unique,
+  alphabetically sorted lowercase words. Replace an entry with another reviewed
+  word when editing the pool; the generator never automatically backfills.
+- `curation_exclusions.tsv`: explicit editorial rejections, with reason
+  categories. Rejected words remain eligible guesses.
+- `answer_blocklist.txt`: the supplied answer-only exclusions, retained.
+- `guesses.txt`: the broad dictionary, including repeated-letter words, regular
+  plurals, obscure terms, and regional spellings. All 11,736 previously accepted
+  guesses are preserved, with `spork`, `swole`, and `gouda` added.
+- `answers.txt`: generated alphabetical copy of the approved pool, consumed by
+  the encoder. Edit `curated_targets.txt` rather than this file.
+- `answer_ranking.tsv`: the same approved words ordered by their Wikipedia
+  occurrence counts. `NA` means no occurrence count was found in the snapshot.
+  Frequency never adds a word to the approval pool.
 
 From the sketch directory:
 
 ```sh
-make dictionary          # select targets, write ranking, then compress all data
-make dictionary-check    # verify targets, ranking, source hashes, and encoded data
-make test-dictionary     # selection-policy tests + exhaustive native tests
+make dictionary          # validate approvals and regenerate all game word data
+make dictionary-check    # reject stale outputs or invalid approvals/source hashes
+make test-dictionary     # curation-policy checks and exhaustive native verification
 make compile             # complete Arduino Nano game at 8 MHz
 ```
 
-`ANSWER_COUNT` in `build_answers.py` controls the target count (currently 1,000).
-To exclude a target, edit the blocklist and run `make dictionary`. Commit
-`answers.txt`, `answer_ranking.tsv`, and `src/wordset/wordset_data.h` together.
-No downloads or sibling folders are needed to regenerate from the committed
-snapshots. Ordinary Arduino IDE and upload-script builds use the committed
-header and require neither Python nor a separate library installation.
+Commit approval changes, generated outputs, and the generated
+`src/wordset/wordset_data.h` together. Add genuinely new words to `guesses.txt`
+as well. Invalid spelling, repeated target letters, duplicate approvals,
+regular noun plurals, rejected words, unknown guesses, and incorrect approval
+counts stop the build. A stale header check also fails instead of silently
+changing the approved pool.
 
-The plural snapshot can be rebuilt from a local ESDB checkout at revision
+Ordinary Arduino IDE and upload-script builds use the committed header. They
+need neither Python nor a separately installed library. Regeneration needs no
+network access or sibling folders.
+
+`wordle_official_list.txt` remains historical source material and no longer
+controls targets. The former packed headers and filter script were retired.
+
+## Plurals and other forms
+
+The pinned ESDB noun-inflection data identifies real noun plurals before any
+spelling rule is applied. The regular forms `lemma+s`, `lemma+es`, and
+consonant-`y` to `-ies` are excluded from targets. Other recorded plural forms
+are treated as irregular; a recorded irregular reading keeps a word eligible
+for editorial approval. Examples include `fungi`, `women`, `media`, `wives`,
+and `lives`. Irregular forms are still reviewed for familiarity.
+
+Source lemmas are matched by ESDB spelling/variant key, so `molds` is paired
+with `mold` instead of the neighboring British `mould` spelling. The snapshot
+covers noun forms matching the union of the conservative dictionary and the
+broad guess set: 3,132 records for 3,086 words. This covers the wider curated
+pool as well as the initial conservative one. Ordinary past tenses and
+verb-only third-person forms remain permitted when explicitly approved.
+
+The plural snapshot can be rebuilt from a local checkout of ESDB revision
 `1e5b7d3a72f47a71da5d28686c1dd4b397178485`:
 
 ```sh
@@ -94,105 +72,87 @@ python3 words/import_plural_forms.py /path/to/wordlist
 make dictionary
 ```
 
-The importer verifies the full source hash, uses the matching ESDB parser,
-and retains noun-plural entries matching the conservative dictionary. It
-records source line numbers, updates the snapshot hash, and needs no database
-build. Ordinary regeneration uses the committed snapshot and does not import
-or download ESDB code.
+The importer checks the raw source hash and uses the matching ESDB parser.
+Ordinary regeneration reads the committed snapshot and never downloads code.
 
-The original `wordle_official_list.txt` remains historical source material;
-it no longer controls targets. The former `word_list.h`, duplicate
-`filtered_word_list.h`, and old filter script have been retired. Input
-validation catches invalid target letters, duplicates, repeated target
-letters, and data exceeding the decoder's index/bucket capacities.
+## Sources and provenance
 
-## How compression works
+- `sources/known_pool.txt`: the supplied 5,200-word conservative SCOWL/ESDB
+  size-60 US pool, retained for provenance and comparison.
+- `sources/enwiki-2023-04-13-guesses.tsv`: all matching frequency rows from
+  the supplied April 13, 2023 English Wikipedia file for the current guess
+  dictionary. It expands the previous conservative-only snapshot so broader
+  approved words can appear in the review report.
+- `sources/plural_forms.tsv`: noun-plural labels, singular lemma, and source
+  line number from the matching ESDB revision.
+- `sources/provenance.json`: source URLs, revisions, row counts, hashes,
+  curation method, and dictionary references for the three added guesses.
 
-Sorted guesses are grouped into 676 buckets by their first two letters.
-A lookup jumps directly to the corresponding prefix bucket. The last three
-letters become numbers from 0 to 17,575; the stream stores gaps between those
-numbers, Rice-coded with a setting chosen for each bucket. A lookup decodes
-just that bucket and stops once it finds or passes the sought suffix. The
-largest bucket has 210 words.
+The supplied guesses matched the union of lowercase five-letter entries in
+its US/British/Canadian/Australian size-95 exports. The imported decoder and
+adapted encoder/test originated in supplied WordSet commit `d009fe3`, whose
+library metadata names Kris as author. The actual ESDB export headers identify
+revision `1e5b7d3`, June 24, 2026. Some supplied fetch settings differ from those
+files; committed snapshots are used here.
 
-An answer bitmap marks which guesses are targets, at one bit per **guess**.
-Increasing or reducing the answer count changes those flags without changing
-the bitmap's size or storing target spellings twice.
+The supplied `words_alpha.txt` was not blindly imported. The old shortcut
+accepting any five-character string ending in S was removed; guesses now
+require actual dictionary membership.
+
+## Compression and device budget
+
+Guesses are sorted into 676 buckets by their first two letters. The remaining
+three letters become numbers from 0 to 17,575; the stream stores the gaps
+between those numbers using Rice coding, with a setting chosen per bucket.
+A lookup jumps to and decodes only the relevant prefix bucket, stopping once
+it finds or passes the sought suffix. The largest bucket has 210 words.
+
+An answer bitmap marks approved targets at one bit per **guess**, so no target
+spelling is stored twice. Changing approvals does not resize the bitmap unless
+the guess dictionary changes.
 
 | Component | Flash bytes |
 | --- | ---: |
-| Compressed suffix stream | 13,976 |
+| Compressed suffix stream | 13,979 |
 | Bucket offsets | 1,352 |
 | Bucket counts | 676 |
 | Bucket compression settings | 338 |
-| Target bitmap | 1,467 |
-| **Total** | **17,809** |
+| Target bitmap | 1,468 |
+| **Total** | **17,813** |
 
-Five-byte strings for these guesses alone would use 58,680 bytes. This
-encoding uses 69.7% less space, including target selection. Membership is
-exact, with no probabilistic false positives. It improves space efficiency;
-it should not be described as universally faster than binary search. Board
-timing has not been measured.
+Five-byte guess strings alone would occupy 58,695 bytes. The compressed data
+uses 69.7% less space, including target selection. Membership is exact and has
+no probabilistic false positives. Space efficiency improves; lookup speed on
+physical hardware has not been measured.
 
-`dictionary.h` preserves the game's uppercase `String` API; WordSet works in
-lowercase internally. Target draws continue to use the existing seeded RNG
-and may repeat. The optional WordSet no-repeat picker is not used, and its
-RAM tracker is removed by the linker. No additional EEPROM history is written.
+The game keeps its uppercase String API. Target draws continue using the
+existing seeded RNG and may repeat. The optional library no-repeat picker is
+not used, and its tracker is removed by the linker. No repeat-history or
+additional EEPROM behavior has been introduced.
 
-## Source review and validation
+## Verification
 
-The decoder and adapted encoder/test originated in the supplied WordSet
-project, commit `d009fe3` (library metadata names Kris as author). Accepted
-guesses come from SCOWL/ESDB, rather than raw Wikipedia tokens. All 11,713
-supplied guesses matched the union of lowercase five-letter entries in its
-US/British/Canadian/Australian size-95 exports. The integration retains four
-additional words from the old source list and 19 former target words absent
-from that supplied dictionary, for 11,736 total guesses.
+Selection tests check that explicit approvals control membership regardless of
+frequency, gaps never auto-fill, invalid approvals fail, regular/irregular
+plural policy is preserved, and spelling variants retain the right lemmas.
+Native tests cover the game adapter, every guess/target, rejected-target
+regressions, added words, case conversion, malformed input, index boundaries,
+10,000 random target draws, and the optional library no-repeat API. They sweep
+all **11,881,376** five-letter strings to prove exact dictionary membership.
 
-The actual ESDB export headers identify revision `1e5b7d3`, June 24, 2026.
-Some supplied README counts and fetch-script variant settings differ from
-those actual files; committed snapshots are used here. The larger
-`words_alpha.txt` was not blindly merged because it includes abbreviations
-and name-like entries. The supplied word sets include offensive terms as
-guesses; target exclusions are controlled separately by the blocklist.
+The host shim covers only the Arduino String/RNG interface used by the adapter.
+Real AVR builds are checked separately using Arduino AVR core 1.8.8, FastLED
+3.10.2, and an 8 MHz CPU. See final build measurements below.
 
-The old validator accepted any five-character string ending in `S`, including
-`ZZZZS`; this integration replaces that shortcut with dictionary membership.
-
-Tests verify regular-plural exclusion, irregular-plural target eligibility,
-correct singular lemmas for spelling variants, preservation of singular
-S-ending targets, continued plural guess acceptance, filter-before-ranking
-behavior, alphabetical frequency ties,
-insufficient candidate handling, current source hashes, and exact agreement
-between generated targets and encoded data. The original 33 MB Wikipedia
-file was also checked independently against the final ranked selection.
-Native tests cover all guesses in both cases, malformed/nonsense inputs,
-every target, index boundaries, 10,000 random target draws, and the library's
-optional no-repeat API. They sweep all **11,881,376** five-letter strings to
-prove exact agreement with the guess list. The host shim covers the Arduino
-String/RNG interface used by the adapter; real AVR compilation is separate.
-
-Nano builds use Arduino AVR core 1.8.8, FastLED 3.10.2, and an 8 MHz CPU:
-
-| Build | Flash / 30,720 bytes | Static RAM / 2,048 bytes |
-| --- | ---: | ---: |
-| Original game | 21,356 | 1,094 |
-| Wikipedia targets, default profile | 29,242 (95%) | 1,088 (53%) |
-
-The default build leaves 1,478 bytes of flash and 960 bytes outside static RAM
-allocations. Static RAM reporting does not include runtime stack/heap use.
 No firmware was uploaded; physical-device responsiveness has not been tested.
+Static RAM reports exclude runtime stack/heap use.
 
 ## Attribution
 
 `NOTICE.txt` preserves the supplied ESDB/UK Advanced Cryptics Dictionary
-notices and adds the Wikipedia word-frequency project's MIT notice and
-LDNOOBW attribution for the supplied answer blocklist. Source URLs and
-snapshot hashes are in `sources/provenance.json`. The plural labels come
-from the same ESDB revision as the dictionary exports and are covered by the
-preserved ESDB data notice.
+notices, Wikipedia word-frequency project's MIT notice, and LDNOOBW attribution
+for the answer blocklist. The added dictionary references are in `CURATION.md`.
 
-The supplied WordSet project has no standalone code LICENSE file. Its
-metadata names its author but does not specify a code licence; a
-redistribution licence for the copied WordSet code still needs to be
-established before publishing it.
+The supplied WordSet code has no standalone LICENSE file. Its metadata names
+its author but gives no code licence; redistribution permission for that
+copied code still needs to be established before publishing it.

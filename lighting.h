@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <FastLED.h>
+#include "light_feedback.h"
 #include "slot.h"  // Include slot.h to access the slot states
 
 // FastLED setup
@@ -31,12 +32,15 @@
 // Define the LED array directly in this file
 CRGB leds[NUM_LEDS];
 
-// Define colors and brightness levels
-#define DIM_WHITE  CRGB(40, 40, 40)   // Dim white for empty slots
-#define BRIGHT_WHITE CRGB(255, 255, 255) // Bright white for full slots
+// Empty and occupied slots share a quiet baseline after recognition.
+LightFeedback lightFeedback;
 
 // Variables for rainbow animation
 uint8_t gHue = 0; // rotating "base color" used by rainbow effect
+uint32_t lastRainbowFrameAt = 0;
+const uint8_t NORMAL_BRIGHTNESS = 50;
+const uint8_t RAINBOW_BRIGHTNESS = 200;
+const uint16_t RAINBOW_FRAME_MS = 100;
 
 // Initialize the LED strip
 void setupLighting() {
@@ -46,7 +50,7 @@ void setupLighting() {
 #else
   FastLED.addLeds<THREE_PIN_LED_TYPE, THREE_PIN_LED_DATA_PIN, THREE_PIN_COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
 #endif
-  FastLED.setBrightness(50);  // Set brightness to 50 (0-255)
+  FastLED.setBrightness(NORMAL_BRIGHTNESS);
   
   // Clear all LEDs
   FastLED.clear();
@@ -54,20 +58,33 @@ void setupLighting() {
 }
 
 // Forward declaration of helper function
-void updateLEDForSlot(int ledIndex, Slot &slot);
+void updateLEDForSlot(int ledIndex, Slot &slot, uint32_t now);
 
 // Update LEDs based on slot states
 // Maps each slot directly to the corresponding LED (slot 1 to LED 1, slot 2 to LED 2, etc.)
 void updateSlotLEDs(Slot slots[], int slotCount) {
   // Clear all LEDs first
   FastLED.clear();
-  
+
+  const uint32_t now = millis();
+  char letters[LightFeedback::SLOT_COUNT] = {};
+  bool valid = slotCount == LightFeedback::SLOT_COUNT;
+  bool denied = slotCount == LightFeedback::SLOT_COUNT;
+  for (int i = 0; i < min(slotCount, int(LightFeedback::SLOT_COUNT)); ++i) {
+    letters[i] = slots[i].letter.length() ? slots[i].letter[0] : 0;
+    const slotState state = slots[i].state;
+    denied = denied && state == INVALID;
+    valid = valid && (state == ABSENT || state == MISPLACED ||
+                      state == CORRECT);
+  }
+  lightFeedback.update(letters, valid, now, denied);
+
   // Update LEDs for each slot
   // Only update if we have enough slots and LEDs
   int maxSlots = min(slotCount, NUM_LEDS);
   
   for (int i = 0; i < maxSlots; i++) {
-    updateLEDForSlot(i, slots[i]);
+    updateLEDForSlot(i, slots[i], now);
   }
   
   // Update the LED strip
@@ -75,13 +92,19 @@ void updateSlotLEDs(Slot slots[], int slotCount) {
 }
 
 // Helper function to update a single LED based on slot state
-void updateLEDForSlot(int ledIndex, Slot &slot) {
+void updateLEDForSlot(int ledIndex, Slot &slot, uint32_t now) {
+  const uint8_t white = lightFeedback.neutralBrightness(ledIndex, now);
+  const bool result = slot.state == ABSENT || slot.state == MISPLACED ||
+                      slot.state == CORRECT;
+  if (result && !lightFeedback.isRevealed(ledIndex, now)) {
+    leds[ledIndex] = CRGB(white, white, white);
+    return;
+  }
   switch (slot.state) {
     case EMPTY:
-      leds[ledIndex] = DIM_WHITE;
-      break;
     case FULL:
-      leds[ledIndex] = BRIGHT_WHITE;
+    case WIN: // Winning guesses use the rainbow renderer directly.
+      leds[ledIndex] = CRGB(white, white, white);
       break;
     case MISPLACED:
       leds[ledIndex] = CRGB::DarkOrange;
@@ -90,15 +113,12 @@ void updateLEDForSlot(int ledIndex, Slot &slot) {
       leds[ledIndex] = CRGB::Green;
       break;
     case ABSENT:
-      leds[ledIndex] = CRGB::Black;
-      break;
-    case WIN:
-      // We'll handle WIN state in the updateRainbowAnimation function
-      // This is just a fallback in case the animation isn't called
-      leds[ledIndex] = CRGB::Purple;
+      leds[ledIndex] = CRGB(LightFeedback::ABSENT_WHITE,
+                            LightFeedback::ABSENT_WHITE,
+                            LightFeedback::ABSENT_WHITE);
       break;
     case INVALID:
-      leds[ledIndex] = CRGB::Red;
+      leds[ledIndex] = CRGB(lightFeedback.deniedBrightness(now), 0, 0);
       break;
     default:
       leds[ledIndex] = CRGB::Black;
@@ -106,18 +126,25 @@ void updateLEDForSlot(int ledIndex, Slot &slot) {
   }
 }
 
-// Function to update the rainbow animation for win state
-void updateRainbowAnimation() {
-  // Set higher brightness for the rainbow animation
-  FastLED.setBrightness(200);  // Increase brightness to 200 (0-255)
-  
-  // Use FastLED's built-in rainbow generator
-  fill_rainbow(leds, NUM_LEDS, gHue, 15);  // Increased delta value for more spread
-  
-  // Rapidly rotate the "base color" through the rainbow
-  gHue += 10;  // Increment hue much faster (10x the original speed)
-  
-  // Show the updated LEDs
+// Reveal the animated rainbow from left to right as soon as a win is detected.
+void updateRainbowAnimation(uint32_t now, uint32_t winStarted) {
+  // Refresh the entry sweep frequently while preserving the rainbow's hue speed.
+  if (uint32_t(now - lastRainbowFrameAt) >= RAINBOW_FRAME_MS) {
+    gHue += 10;
+    lastRainbowFrameAt = now;
+  }
+  FastLED.setBrightness(RAINBOW_BRIGHTNESS);
+  fill_rainbow(leds, NUM_LEDS, gHue, 15);
+
+  // Keep slots ahead of the sweep at their original neutral brightness, even
+  // though the rainbow uses a higher global brightness.
+  const uint8_t neutral = uint16_t(LightFeedback::NEUTRAL_WHITE) *
+                          NORMAL_BRIGHTNESS / RAINBOW_BRIGHTNESS;
+  for (uint8_t i = 0; i < NUM_LEDS; ++i) {
+    if (!LightFeedback::rainbowSlotVisible(i, uint32_t(now - winStarted))) {
+      leds[i] = CRGB(neutral, neutral, neutral);
+    }
+  }
   FastLED.show();
 }
 

@@ -11,8 +11,11 @@ It replaces the game firmware; use `./upload_usbasp.sh` to restore the game.
 
 Each LED corresponds to its slot, using A0, A1, A2, A3, A6 and the game's
 APA102 strip on data pin 11 / clock pin 13. ADC reference is Vcc.
-Every slot gets one reading every 5 ms, passed through the same eight-sample moving average
-as the game (about 40 ms to fully respond). A rolling window holds the most
+Every slot is read twice per scan: the first conversion after switching ADC
+inputs is discarded, and only the second is used, matching the game. This
+adds roughly 0.5–0.6 ms of ADC work across five slots. Diagnostic scans remain
+scheduled every 5 ms, with the same eight-sample moving average as the game
+(about 40 ms to fully respond). A rolling window holds the most
 recent 16 averaged readings (about 80 ms); LEDs refresh every 25 ms.
 A settled diagnostic color normally follows within about 145 ms including
 averaging, stability history, and LED refresh. This is not a hardware timing

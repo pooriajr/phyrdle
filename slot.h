@@ -42,6 +42,8 @@ class Slot {
     
     // Method to read analog signal and identify letter
     void readLetter() {
+      // Discard the first conversion after switching ADC inputs.
+      (void)analogRead(pin);
       rawValue = analogRead(pin);
       signalValue = adcAverage.update(rawValue, millis(), EMPTY_SLOT_MAX_ADC);
       letter = identify(signalValue);
